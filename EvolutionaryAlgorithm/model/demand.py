@@ -7,6 +7,8 @@ class Demand:
         self.end_node = int(end_node) # node id
         self.demand_volume = int(demand_volume)
         self.number_of_demand_paths = int(number_of_demand_paths)
+        if not all(isinstance(n, DemandPath) for n in demand_path_list):
+            return 1
         self.demand_path_list = demand_path_list
 
     def print(self):

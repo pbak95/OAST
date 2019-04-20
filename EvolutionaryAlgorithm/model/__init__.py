@@ -3,7 +3,7 @@ import logging
 
 from .network import Network
 from .demand import Demand, DemandPath, DemandFlow, DemandPathFlow
-from .link import Link, LinkLoad
+from .link import Link
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
