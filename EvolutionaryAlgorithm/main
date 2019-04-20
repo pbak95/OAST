@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+
+def readFile(file_name: str):
+    with open(file_name, 'r') as file:
+        for aline in file:
+            values = aline.split()
+            print(*values, sep=", ")
+
+
+def main():
+    """ Main program """
+    readFile('data/net12_1.txt')
+    # Code goes over here.
+    return 0
+
+
+if __name__ == "__main__":
+    main()
