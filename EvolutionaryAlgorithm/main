@@ -20,10 +20,10 @@ def main():
     network_4.print()
 
     # Find solutions.
-    number_of_links, links_load_list, number_of_demands, demands_flow_list = brute_solve(network_4)
-    write_file('output/net4_brute_solution.txt', number_of_links, links_load_list, number_of_demands, demands_flow_list)
-    number_of_links, links_load_list, number_of_demands, demands_flow_list = evolutionary_solve(network_4)
-    write_file('output/net4_evolutionary_solution.txt', number_of_links, links_load_list, number_of_demands, demands_flow_list)
+    network = brute_solve(network_4)
+    write_file('output/net4_brute_solution.txt', network)
+    network = evolutionary_solve(network_4)
+    write_file('output/net4_evolutionary_solution.txt', network)
     return 0
 
 

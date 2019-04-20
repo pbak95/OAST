@@ -1,7 +1,7 @@
 import os
 import errno
 
-from model import Link, Demand
+from model import Link, Demand, Network
 
 
 def print_values(number_of_links, links_list, number_of_demands, demands_list):
@@ -74,7 +74,7 @@ def write_demand_part(file, number_of_demands, demands_flow_list):
         file.write(demands_flow_list[idx].print_as_line() + '\n')
 
 
-def write_file(file_name: str, number_of_links, links_load_list: list, number_of_demands: int, demands_flow_list: list):
+def write_file(file_name: str, network: Network):
     if not os.path.exists(os.path.dirname(file_name)):
         try:
             os.makedirs(os.path.dirname(file_name))
@@ -83,6 +83,6 @@ def write_file(file_name: str, number_of_links, links_load_list: list, number_of
                 raise
 
     with open(file_name, 'w') as file:
-        write_link_part(file, number_of_links, links_load_list)
+        write_link_part(file, network.number_of_links, network.links_list)
         file.write('\n')
-        write_demand_part(file, number_of_demands, demands_flow_list)
+        write_demand_part(file, len(network.demand_solution), network.demand_solution)

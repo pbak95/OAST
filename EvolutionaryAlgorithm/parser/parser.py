@@ -2,10 +2,10 @@ from model import Link, Demand, DemandPath
 
 from model import Network
 
+
 def read_links(file) -> (int, list):
     number_of_links = int(file.readline().split()[0])
     # Move pointer to second line
-    next(file)
 
     link_list = []
     # Enumerate uses next to move lines
