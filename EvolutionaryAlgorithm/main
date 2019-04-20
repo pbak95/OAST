@@ -3,7 +3,8 @@
 
 from parser import read_file
 from writer import write_file
-from model import Link, DemandFlow, DemandPathFlow
+from brute_solver import brute_solve
+from evolutionary_solver import evolutionary_solve
 from constants import USAGE
 
 
@@ -18,28 +19,11 @@ def main():
     network_4 = read_file('data/net4.txt')
     network_4.print()
 
-    # Code goes over here.
-
-    # Example solution printing
-    number_of_links = 2
-    links_load_list = [
-        Link(link_id=1,start_node=1, end_node=2, maximum_number_of_modules=4, module_cost=1,
-             single_module_capacity=2, number_of_signals=2, number_of_fibers=3),
-        Link(link_id=2,start_node=1, end_node=2, maximum_number_of_modules=4, module_cost=1,
-             single_module_capacity=2, number_of_signals=2, number_of_fibers=3),
-    ]
-    number_of_demands = 2
-    demands_flow_list = [
-        DemandFlow(
-            demand_id=1, number_of_demand_paths=1,
-            demand_path_flow_list=[DemandPathFlow(path_id=1, path_singal_count=2)]
-        ),
-        DemandFlow(
-            demand_id=2, number_of_demand_paths=1,
-            demand_path_flow_list=[DemandPathFlow(path_id=2, path_singal_count=2)]
-        )
-    ]
-    write_file('output/net4.txt', number_of_links, links_load_list, number_of_demands, demands_flow_list)
+    # Find solutions.
+    number_of_links, links_load_list, number_of_demands, demands_flow_list = brute_solve(network_4)
+    write_file('output/net4_brute_solution.txt', number_of_links, links_load_list, number_of_demands, demands_flow_list)
+    number_of_links, links_load_list, number_of_demands, demands_flow_list = evolutionary_solve(network_4)
+    write_file('output/net4_evolutionary_solution.txt', number_of_links, links_load_list, number_of_demands, demands_flow_list)
     return 0
 
 
