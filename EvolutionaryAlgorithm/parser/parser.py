@@ -1,17 +1,6 @@
 from model import Link, Demand, DemandPath
 
-
-def print_values(number_of_links, links_list, number_of_demands, demands_list):
-    print('### INPUT ###')
-    print(f'Number of links: {number_of_links}')
-    print(f'Number of demands: {number_of_demands}')
-
-    for idx, link in enumerate(links_list):
-        link.print()
-
-    for idx, demand in enumerate(demands_list):
-        demand.print()
-
+from model import Network
 
 def read_links(file) -> (int, list):
     number_of_links = int(file.readline().split()[0])
@@ -59,8 +48,8 @@ def read_demands(file) -> (int, list):
     return number_of_demands, demands_list
 
 
-def read_file(file_name: str) -> (int, list, int, list):
+def read_file(file_name: str) -> Network:
     with open(file_name, 'r') as file:
         number_of_links, links_list = read_links(file)
         number_of_demands, demands_list = read_demands(file)
-    return number_of_links, links_list, number_of_demands, demands_list
+    return Network(number_of_links, links_list, number_of_demands, demands_list)
