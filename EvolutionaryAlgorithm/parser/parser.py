@@ -49,7 +49,7 @@ def read_demands(file) -> (int, list):
         for demand_paths_idx in range(number_of_demand_paths):
             path_values = file.readline().split()
             demand_path_id = path_values[0]
-            link_list = path_values[1:]
+            link_list = list(map(int, path_values[1:]))
             demand_path_list.append(DemandPath(demand_path_id, link_list))
         demands_list.append(
             Demand(demand_idx + 1, start_node, end_node, demand_volume, number_of_demand_paths, demand_path_list)

@@ -11,9 +11,9 @@ class Demand:
 
     def print(self):
         print(f'\tDemand idx: {self.demand_id}')
-        for attr in dir(self):
-            if attr in ('start_node', 'end_node', 'demand_volume', 'number_of_demand_paths', 'demand_path_list'):
-                print(f'\t\t{attr} = {getattr(self, attr)}')
+        print(f'\t\tdemand_volume = {self.demand_volume} Mbps')
+        for attr in ('start_node', 'end_node', 'number_of_demand_paths', 'demand_path_list'):
+            print(f'\t\t{attr} = {getattr(self, attr)}')
 
 
 # input data class
