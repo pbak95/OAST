@@ -1,6 +1,9 @@
 # IDEA config
 **/.idea/**
 
+# Output files
+output
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

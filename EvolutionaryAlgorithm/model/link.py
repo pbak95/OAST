@@ -1,6 +1,6 @@
 # input data class
 class Link:
-    def __init__(self, link_id:int, start_node: int, end_node: int, demand_volume: int, module_cost: float,
+    def __init__(self, link_id: int, start_node: int, end_node: int, demand_volume: int, module_cost: float,
                  link_module: int):
         self.link_id = link_id
         self.start_node = start_node
@@ -18,7 +18,16 @@ class Link:
 
 # output data class
 class LinkLoad:
-    def __init__(self, values):
-        self.link_id = int(values[0])
-        self.number_of_signals = int(values[1])
-        self.number_of_fibers = int(values[2])
+    def __init__(self, link_id: int, number_of_signals: int, number_of_fibers: int):
+        self.link_id = link_id
+        self.number_of_signals = number_of_signals
+        self.number_of_fibers = number_of_fibers
+
+    def print_as_line(self):
+        return f'{self.link_id} {self.number_of_signals} {self.number_of_fibers}'
+
+    def print(self):
+        print(f'\tLink idx: {self.link_id}')
+        for attr in dir(self):
+            if attr in ('number_of_signals', 'number_of_fibers'):
+                print(f'\t\t{attr} = {getattr(self, attr)}')

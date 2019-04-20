@@ -39,14 +39,30 @@ class DemandPath:
 
 # output data class
 class DemandFlow:
-    def __init__(self, demand_id, number_of_demand_paths, demand_path_flow_list):
-        self.demand_id = int(demand_id)
-        self.number_of_demand_paths = int(number_of_demand_paths)
-        self.demand_path_flow_list = demand_path_flow_list
+    def __init__(self, demand_id: int, number_of_demand_paths: int, demand_path_flow_list: list):
+        self.demand_id = demand_id
+        self.number_of_demand_paths = number_of_demand_paths
+        self.demand_path_flow_list = demand_path_flow_list # DemandPathFlow list
+
+    def print_as_line(self):
+        list_as_multiline = "\n".join([x.print_as_line() for x in self.demand_path_flow_list])
+        return f'{self.demand_id} {self.number_of_demand_paths}\n{list_as_multiline}\n'
 
 
 # output data class
 class DemandPathFlow:
-    def __init__(self, path_id, path_singal_count):
-        self.path_id = int(path_id)
-        self.path_singal_count = int(path_singal_count)
+    def __init__(self, path_id: int, path_singal_count: int):
+        self.path_id = path_id
+        self.path_singal_count = path_singal_count
+
+    def __str__(self):
+        return f'({self.path_id} {self.path_singal_count})'
+
+    def __unicode__(self):
+        return f'({self.path_id} {self.path_singal_count})'
+
+    def __repr__(self):
+        return f'({self.path_id} {self.path_singal_count})'
+
+    def print_as_line(self):
+        return f'{self.path_id} {self.path_singal_count}'

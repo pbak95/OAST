@@ -1,6 +1,6 @@
 #!/usr/bin/python2.7
-from .demand import Demand, DemandPath
-from .link import Link
+from .demand import Demand, DemandPath, DemandFlow, DemandPathFlow
+from .link import Link, LinkLoad
 
 import logging
 logger = logging.getLogger(__name__)
