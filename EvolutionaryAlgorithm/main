@@ -2,16 +2,116 @@
 # -*- coding: utf-8 -*-
 
 
-def readFile(file_name: str):
+class Link:
+    def __init__(self, values):
+        if len(values) != 5:
+            return 1
+        self.start_node = int(values[0]) # node id
+        self.end_node = int(values[1]) # node id
+        self.demand_volume = int(values[2])
+        self.module_cost = float(values[3])
+        self.link_module = int(values[4])
+
+    def print(self):
+        for attr in dir(self):
+            if attr in ('start_node', 'end_node', 'number_of_modules', 'module_cost', 'link_module'):
+                print(f'\t\t{attr} = {getattr(self, attr)}')
+
+
+class Demand:
+    def __init__(self, values):
+        if len(values) != 5:
+            return 1
+        self.start_node = int(values[0]) # node id
+        self.end_node = int(values[1]) # node id
+        self.number_of_modules = int(values[2])
+        self.module_cost = float(values[3])
+        self.link_module = int(values[4])
+
+    def print(self):
+        for attr in dir(self):
+            if attr in ('start_node', 'end_node', 'number_of_modules', 'module_cost', 'link_module'):
+                print(f'\t\t{attr} = {getattr(self, attr)}')
+
+
+def print_usage():
+    usage = """Naming convention:
+    Nodes: V
+    Edges: E
+        Pairs of nodes: {v,w}
+        Modules: M
+        Number of modules: epsilon(e)
+        Link capacity: C(e) 
+    Demands: D
+        Pair of nodes: {o(d), t(d)}
+        Demand volume (eg. Mbps): h(d)
+        List of paths betweem o <-> d: P(d) = {P(d,1), P(d,2,...}
+
+File format:
+    <network> ::= <links><EOL>-1<EOL><demands>
+    
+    <links>
+        <numberof links> ::= <integer>
+        <lsit_of_links> 
+            <link> ::= <start node> <end node> <numberof modules> <module cost> <link module>
+    
+    
+"""
+    print(usage)
+
+
+def print_values(number_of_links, links_list):
+    print(f'Number of links: {number_of_links}')
+    for idx, link in enumerate(links_list):
+        print(f'\tLink idx: {idx}')
+        link.print()
+
+
+def read_links(file) -> (int, list):
+    number_of_links = int(file.readline().split()[0])
+    # Move pointer to second line
+    next(file)
+
+    link_list = []
+    # Enumerate uses next to move lines
+    for idx, line in enumerate(file):
+        values = line.split()
+
+        if len(values) == 1 and values[0] == '-1':
+            # Separator found! Links have been read
+            return number_of_links, link_list
+
+        link_list.append(Link(values))
+
+
+# def read_demands(file, idx_from):
+#     next(file)
+#     number_of_demands = int(file.readline().split()[0])
+#     print(f'Number of demands: {number_of_demands}')
+#
+#     demands_list = []
+#     # Enumerate uses next to move lines
+#     for idx, line in enumerate(file):
+#         values = line.split()
+#
+#         if len(values) == 1 and values[0] == '-1':
+#             # Separator found! Links have been read
+#             return number_of_links, link_list
+#
+#         link_list.append(Link(values))
+
+
+def read_file(file_name: str):
     with open(file_name, 'r') as file:
-        for aline in file:
-            values = aline.split()
-            print(*values, sep=", ")
+        number_of_links, links_list = read_links(file)
+        # read_demands(file, idx)
+        print_values(number_of_links, links_list)
 
 
 def main():
     """ Main program """
-    readFile('data/net12_1.txt')
+    print_usage()
+    read_file('data/net12_1.txt')
     # Code goes over here.
     return 0
 
