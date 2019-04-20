@@ -19,18 +19,16 @@ class Link:
 
 
 class Demand:
-    def __init__(self, values):
-        if len(values) != 5:
-            return 1
-        self.start_node = int(values[0]) # node id
-        self.end_node = int(values[1]) # node id
-        self.number_of_modules = int(values[2])
-        self.module_cost = float(values[3])
-        self.link_module = int(values[4])
+    def __init__(self, start_node, end_node, demand_volume, number_of_demand_paths, demand_path_list):
+        self.start_node = int(start_node) # node id
+        self.end_node = int(end_node) # node id
+        self.demand_volume = int(demand_volume)
+        self.number_of_demand_paths = int(number_of_demand_paths)
+        self.demand_path_list = demand_path_list
 
     def print(self):
         for attr in dir(self):
-            if attr in ('start_node', 'end_node', 'number_of_modules', 'module_cost', 'link_module'):
+            if attr in ('start_node', 'end_node', 'demand_volume', 'number_of_demand_paths', 'demand_path_list'):
                 print(f'\t\t{attr} = {getattr(self, attr)}')
 
 
@@ -51,20 +49,37 @@ File format:
     <network> ::= <links><EOL>-1<EOL><demands>
     
     <links>
-        <numberof links> ::= <integer>
-        <lsit_of_links> 
+        <number_of_links> ::= <integer>
+        <list_of_links> 
             <link> ::= <start node> <end node> <numberof modules> <module cost> <link module>
+    <demand>
+        <number_of_demands> ::= <integer>
+        <list_of_demands>
+            <demand> ::= <start node> <end node> <demandvolume><EOL><demandpaths>
+            <list_of_paths>
+                <path> ::= <numberof demandpaths><EOL><demandpathlist>
+                <list_of_demand_path_list>
+                    <demandpath> ::= <demandpathid> <link list><EOL>
+                    <link list> ::= <link id>[ <link id>]*
+        
+        
     
     
 """
     print(usage)
 
 
-def print_values(number_of_links, links_list):
+def print_values(number_of_links, links_list, number_of_demands, demands_list):
     print(f'Number of links: {number_of_links}')
+    print(f'Number of demands: {number_of_demands}')
+
     for idx, link in enumerate(links_list):
         print(f'\tLink idx: {idx}')
         link.print()
+
+    for idx, demand in enumerate(demands_list):
+        print(f'\tDemand idx: {idx}')
+        demand.print()
 
 
 def read_links(file) -> (int, list):
@@ -84,28 +99,42 @@ def read_links(file) -> (int, list):
         link_list.append(Link(values))
 
 
-# def read_demands(file, idx_from):
-#     next(file)
-#     number_of_demands = int(file.readline().split()[0])
-#     print(f'Number of demands: {number_of_demands}')
-#
-#     demands_list = []
-#     # Enumerate uses next to move lines
-#     for idx, line in enumerate(file):
-#         values = line.split()
-#
-#         if len(values) == 1 and values[0] == '-1':
-#             # Separator found! Links have been read
-#             return number_of_links, link_list
-#
-#         link_list.append(Link(values))
+def read_demands(file) -> (int, list):
+    next(file)
+    number_of_demands = int(file.readline().split()[0])
+    #print(f'Number of demands: {number_of_demands}')
+    next(file)
+    demands_list = []
+
+    for demand_idx in range(number_of_demands):
+        #print(f'Demand: {demand_idx+1}')
+        values = file.readline().split()
+        start_node = values[0]
+        end_node = values[1]
+        demand_volume = values[2]
+        #print(f'\tStart node: {start_node}, End node: {end_node}, Demand volume: {demand_volume} ')
+        number_of_demand_paths = int(file.readline().split()[0])
+        # print(f'\tNumber of demands paths: {number_of_demand_paths}')
+
+        demand_path_list = []
+        for demand_paths_idx in range(number_of_demand_paths):
+            path_values = file.readline().split()
+            demand_path_id = path_values[0]
+            link_list = path_values[1:]
+            demand_path_list.append((demand_path_id, link_list))
+            #print(f'Demand path id: {demand_path_id}')
+        demands_list.append(Demand(start_node, end_node, demand_volume, number_of_demand_paths, demand_path_list))
+        #print(f'i {demand_idx}, num {number_of_demands + 1}')
+        if demand_idx != number_of_demands - 1:
+            next(file)
+    return number_of_demands, demands_list
 
 
 def read_file(file_name: str):
     with open(file_name, 'r') as file:
         number_of_links, links_list = read_links(file)
-        # read_demands(file, idx)
-        print_values(number_of_links, links_list)
+        number_of_demands, demands_list = read_demands(file)
+        print_values(number_of_links, links_list, number_of_demands, demands_list)
 
 
 def main():
