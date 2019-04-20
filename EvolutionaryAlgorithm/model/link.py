@@ -1,13 +1,13 @@
 # input data class
 class Link:
     def __init__(self, link_id: int, start_node: int, end_node: int, demand_volume: int, module_cost: float,
-                 link_module: int):
+                 link_module_capacity: int):
         self.link_id = link_id
         self.start_node = start_node
         self.end_node = end_node
         self.demand_volume = demand_volume
         self.module_cost = module_cost
-        self.link_module = link_module
+        self.link_module_capacity = link_module_capacity
 
     def print(self):
         print(f'\tLink idx: {self.link_id}')

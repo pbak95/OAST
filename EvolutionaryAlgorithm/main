@@ -14,16 +14,16 @@ def print_usage():
 def main():
     """ Main program """
     print_usage()
-    number_of_links_1, links_list_1, number_of_demands_1, demands_list_1 = read_file('data/net12_1.txt')
+    # number_of_links_1, links_list_1, number_of_demands_1, demands_list_1 = read_file('data/net12_1.txt')
     # number_of_links_2, links_list_2, number_of_demands_2, demands_list_2 = read_file('data/net12_2.txt')
-    # number_of_links_4, links_list_4, number_of_demands_4, demands_list_4 = read_file('data/net4.txt')
+    number_of_links_4, links_list_4, number_of_demands_4, demands_list_4 = read_file('data/net4.txt')
 
-    print_values(number_of_links_1, links_list_1, number_of_demands_1, demands_list_1)
+    # print_values(number_of_links_1, links_list_1, number_of_demands_1, demands_list_1)
     # print_values(number_of_links_2, links_list_2, number_of_demands_2, demands_list_2)
-    # print_values(number_of_links_4, links_list_4, number_of_demands_4, demands_list_4)
+    print_values(number_of_links_4, links_list_4, number_of_demands_4, demands_list_4)
 
     # Code goes over here.
-    
+
     # Example solution printing
     number_of_links = 2
     links_load_list = [
@@ -41,7 +41,7 @@ def main():
             demand_path_flow_list=[DemandPathFlow(path_id=2, path_singal_count=2)]
         )
     ]
-    write_file('output/net12_1.txt', number_of_links, links_load_list, number_of_demands, demands_flow_list)
+    write_file('output/net4.txt', number_of_links, links_load_list, number_of_demands, demands_flow_list)
     return 0
 
 
