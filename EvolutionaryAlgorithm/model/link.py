@@ -1,14 +1,24 @@
+# input data class
 class Link:
-    def __init__(self, values):
-        if len(values) != 5:
-            return 1
-        self.start_node = int(values[0]) # node id
-        self.end_node = int(values[1]) # node id
-        self.demand_volume = int(values[2])
-        self.module_cost = float(values[3])
-        self.link_module = int(values[4])
+    def __init__(self, link_id:int, start_node: int, end_node: int, demand_volume: int, module_cost: float,
+                 link_module: int):
+        self.link_id = link_id
+        self.start_node = start_node
+        self.end_node = end_node
+        self.demand_volume = demand_volume
+        self.module_cost = module_cost
+        self.link_module = link_module
 
     def print(self):
+        print(f'\tLink idx: {self.link_id}')
         for attr in dir(self):
             if attr in ('start_node', 'end_node', 'number_of_modules', 'module_cost', 'link_module'):
                 print(f'\t\t{attr} = {getattr(self, attr)}')
+
+
+# output data class
+class LinkLoad:
+    def __init__(self, values):
+        self.link_id = int(values[0])
+        self.number_of_signals = int(values[1])
+        self.number_of_fibers = int(values[2])

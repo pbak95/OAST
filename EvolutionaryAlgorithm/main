@@ -12,8 +12,13 @@ def print_usage():
 def main():
     """ Main program """
     print_usage()
-    number_of_links, links_list, number_of_demands, demands_list = read_file('data/net12_1.txt')
-    #print_values(number_of_links, links_list, number_of_demands, demands_list)
+    number_of_links_1, links_list_1, number_of_demands_1, demands_list_1 = read_file('data/net12_1.txt')
+    number_of_links_2, links_list_2, number_of_demands_2, demands_list_2 = read_file('data/net12_2.txt')
+    number_of_links_4, links_list_4, number_of_demands_4, demands_list_4 = read_file('data/net4.txt')
+
+    print_values(number_of_links_1, links_list_1, number_of_demands_1, demands_list_1)
+    # print_values(number_of_links_2, links_list_2, number_of_demands_2, demands_list_2)
+    # print_values(number_of_links_4, links_list_4, number_of_demands_4, demands_list_4)
 
     # Code goes over here.
 
