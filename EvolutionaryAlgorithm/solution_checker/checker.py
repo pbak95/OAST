@@ -12,10 +12,8 @@ def check_solution(network: Network) -> bool:
 
         link_used_capacity = link.single_module_capacity * link.number_of_signals
         # checking demands
-        for demand_flow in network.demand_solution:
-            demand_id = demand_flow.demand_id
-            demand = [item for item in network.demands_list if item.demand_id == demand_id]
-
+        for demand in network.demands_list:
+            demand_id = demand.demand_id
             for demand_path in demand.demand_path_list:
                 pass
 

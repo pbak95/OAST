@@ -24,7 +24,6 @@ def main():
     write_file('output/net4_brute_solution.txt', network)
     network = evolutionary_solve(network_4)
     write_file('output/net4_evolutionary_solution.txt', network)
-    return 0
 
 
 if __name__ == "__main__":
