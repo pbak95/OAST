@@ -3,7 +3,7 @@ from model import Link, Demand, DemandPath
 from model import Network
 
 
-def read_links(file) -> (int, list):
+def _read_links(file) -> (int, list):
     number_of_links = int(file.readline().split()[0])
     # Move pointer to second line
 
@@ -23,7 +23,7 @@ def read_links(file) -> (int, list):
     raise Exception
 
 
-def read_demands(file) -> (int, list):
+def _read_demands(file) -> (int, list):
     next(file)
     number_of_demands = int(file.readline().split()[0])
     next(file)
@@ -53,6 +53,6 @@ def read_demands(file) -> (int, list):
 
 def read_file(file_name: str) -> Network:
     with open(file_name, 'r') as file:
-        number_of_links, links_list = read_links(file)
-        number_of_demands, demands_list = read_demands(file)
+        number_of_links, links_list = _read_links(file)
+        number_of_demands, demands_list = _read_demands(file)
     return Network(number_of_links, links_list, number_of_demands, demands_list)

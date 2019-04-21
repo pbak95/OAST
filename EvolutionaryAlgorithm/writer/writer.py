@@ -4,7 +4,7 @@ import os
 from model import Network
 
 
-def write_link_part(file, number_of_links, links_load_list):
+def _write_link_part(file, number_of_links, links_load_list):
     file.write(str(number_of_links) + '\n')
 
     for idx in range(number_of_links):
@@ -12,7 +12,7 @@ def write_link_part(file, number_of_links, links_load_list):
     file.write('-1\n')
 
 
-def write_demand_part(file, number_of_demands, demands_flow_list):
+def _write_demand_part(file, number_of_demands, demands_flow_list):
     file.write(str(number_of_demands) + '\n\n')
 
     for idx in range(number_of_demands):
@@ -28,6 +28,6 @@ def write_file(file_name: str, network: Network):
                 raise
 
     with open(file_name, 'w') as file:
-        write_link_part(file, network.number_of_links, network.links_list)
+        _write_link_part(file, network.number_of_links, network.links_list)
         file.write('\n')
-        write_demand_part(file, len(network.demands_list), network.demands_list)
+        _write_demand_part(file, len(network.demands_list), network.demands_list)
