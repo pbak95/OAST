@@ -1,7 +1,8 @@
 #!/usr/bin/env python3.6
 # -*- coding: utf-8 -*-
 
-from parser import read_file
+from EvolutionaryAlgorithm.parser.parser import read_file
+# from parser import read_file
 from writer import write_file
 from brute_solver import brute_solve
 from evolutionary_solver import evolutionary_solve
