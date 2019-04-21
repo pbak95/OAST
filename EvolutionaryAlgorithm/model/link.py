@@ -29,3 +29,4 @@ class Link:
 
     def print_result_to_file(self):
         return f'{self.link_id} {self.number_of_signals} {self.number_of_fibers}'
+

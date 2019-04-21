@@ -28,3 +28,13 @@ class Network:
                 if link_id in path.link_list:
                     result.append((demand.demand_id, path.demand_path_id))
         return result
+
+    def update_link_capacity(self):
+        for link in self.links_list:
+            link.number_of_signals = 0
+            link.number_of_fibers = 0
+            for demand in self.demands_list:
+                for path in demand.demand_path_list:
+                    if link.link_id in path.link_list and path.solution_path_signal_count != 0:
+                        link.number_of_signals = link.number_of_signals + 1
+                        link.number_of_fibers = link.single_module_capacity * path.solution_path_signal_count
