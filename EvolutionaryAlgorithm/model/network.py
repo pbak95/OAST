@@ -1,7 +1,9 @@
 # input data class
 class Network:
-    def __init__(self, number_of_links: int, links_list: list, number_of_demands: int, demands_list: list,
-                 demand_solution=[]):
+    def __init__(self, number_of_links: int, links_list: list, number_of_demands: int,
+                 demands_list: list, demand_solution=None):
+        if demand_solution is None:
+            demand_solution = []
         self.number_of_links = number_of_links
         self.links_list = links_list
         self.number_of_demands = number_of_demands
@@ -13,10 +15,10 @@ class Network:
         print(f'Number of links: {self.number_of_links}')
         print(f'Number of demands: {self.number_of_demands}')
 
-        for idx, link in enumerate(self.links_list):
+        for _, link in enumerate(self.links_list):
             link.print()
 
-        for idx, demand in enumerate(self.demands_list):
+        for _, demand in enumerate(self.demands_list):
             demand.print()
 
     def get_all_possible_demands_of_link(self, link_id):

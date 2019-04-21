@@ -1,6 +1,7 @@
 # input data class
 class Link:
-    def __init__(self, link_id: int, start_node: int, end_node: int, maximum_number_of_modules: int, module_cost: float,
+    def __init__(self, link_id: int, start_node: int, end_node: int,
+                 maximum_number_of_modules: int, module_cost: float,
                  single_module_capacity: int, number_of_signals=0, number_of_fibers=0):
         self.link_id = link_id
         self.start_node = start_node
@@ -17,7 +18,8 @@ class Link:
 
     def print(self):
         print(f'\tLink idx: {self.link_id}')
-        for attr in ('start_node', 'end_node', 'maximum_number_of_modules', 'module_cost', 'single_module_capacity'):
+        for attr in ('start_node', 'end_node', 'maximum_number_of_modules',
+                     'module_cost', 'single_module_capacity'):
             print(f'\t\t{attr} = {getattr(self, attr)}')
 
     def print_result(self):
