@@ -2,6 +2,7 @@ from model import Network
 
 
 def check_solution(network: Network) -> bool:
+    # TODO write demands checker
     total_link_cost = 0
     for link in network.links_list:
         # Minimalize total link cost

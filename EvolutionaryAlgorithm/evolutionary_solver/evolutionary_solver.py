@@ -18,6 +18,7 @@ def mock_solution(network) -> Network:
 
 def evolutionary_solve(network: Network) -> Network:
     # Solve here
+    # TODO add evolutionary algorithm
     check_solution(network)
 
     return mock_solution(network)
