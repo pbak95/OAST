@@ -8,11 +8,14 @@ class Link:
         :param link_id: Unique id
         :param start_node: Node id
         :param end_node: Node id
-        :param maximum_number_of_modules: How much modules could fit in this link
+        :param maximum_number_of_modules:
+        How much modules could fit in this link
         :param module_cost: Single module cost in abstract units
         :param single_module_capacity: Mbps of single module
-        :param number_of_signals: Solution variable (how much demands path is using this link)
-        :param number_of_fibers: Solution variable (how much modules are used) < maximum_number_of_modules
+        :param number_of_signals: Solution variable
+        (how much demands path is using this link)
+        :param number_of_fibers: Solution variable
+        (how much modules are used) < maximum_number_of_modules
         """
         self.link_id = link_id
         self.start_node = start_node

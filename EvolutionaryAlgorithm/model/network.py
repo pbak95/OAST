@@ -5,9 +5,11 @@ class Network:
         """
 
         :param number_of_links: len(links_list)
-        :param links_list: Network links list, links contain input and output variables
+        :param links_list: Network links list,
+        links contain input and output variables
         :param number_of_demands: len(demands_list)
-        :param demands_list: Network demands list, demands contain input and output variables
+        :param demands_list: Network demands list,
+        demands contain input and output variables
         :param demand_solution:
         """
         self.number_of_links = number_of_links
