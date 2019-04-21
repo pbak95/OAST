@@ -5,7 +5,7 @@ from brute_solver import brute_solve
 from constants import USAGE
 from evolutionary_solver import evolutionary_solve
 from file_parser import read_file
-from writer import write_file
+from file_writer import write_file
 
 
 def print_usage():
