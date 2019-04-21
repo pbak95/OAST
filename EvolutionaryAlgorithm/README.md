@@ -7,3 +7,7 @@ Implementation and optimalization of Evolutionary Algorithm and Brute Force algo
 ```
 > python3.6 main
 ```
+OR
+```
+> ./main
+```
