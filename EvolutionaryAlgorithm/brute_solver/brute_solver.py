@@ -18,7 +18,8 @@ def mock_solution(network) -> Network:
 
 def brute_solve(network: Network) -> Network:
     # Solve here
+    # TODO add brute force algorithm
+
     check_solution(network)
 
     return mock_solution(network)
-

@@ -1,12 +1,11 @@
 #!/usr/bin/env python3.6
 # -*- coding: utf-8 -*-
 
-from EvolutionaryAlgorithm.parser.parser import read_file
-# from parser import read_file
-from writer import write_file
 from brute_solver import brute_solve
-from evolutionary_solver import evolutionary_solve
 from constants import USAGE
+from evolutionary_solver import evolutionary_solve
+from file_parser import read_file
+from file_writer import write_file
 
 
 def print_usage():
@@ -25,7 +24,6 @@ def main():
     write_file('output/net4_brute_solution.txt', network)
     network = evolutionary_solve(network_4)
     write_file('output/net4_evolutionary_solution.txt', network)
-    return 0
 
 
 if __name__ == "__main__":

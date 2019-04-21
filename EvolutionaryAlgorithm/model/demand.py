@@ -1,16 +1,28 @@
 # input data class
 class Demand:
-    def __init__(self, demand_id: int, start_node: int, end_node: int, demand_volume: int, number_of_demand_paths: int,
+    def __init__(self, demand_id: int, start_node: int, end_node: int,
+                 demand_volume: int, number_of_demand_paths: int,
                  demand_path_list: list, solution_number_of_demand_paths=0):
+        """
+        Constructor
+        :param demand_id:
+        :param start_node: Node id
+        :param end_node: Node id
+        :param demand_volume: Capacity needed Mbps
+        :param number_of_demand_paths: How much possibilities to reach end node
+        :param demand_path_list: List of possible paths between nodes with signal counts for each of them
+        :type demand_path_list: list[DemandPath]
+        :param solution_number_of_demand_paths: How much paths are used for resolve this demand
+        """
         self.demand_id = demand_id
-        self.start_node = int(start_node) # node id
-        self.end_node = int(end_node) # node id
+        self.start_node = int(start_node)  # node id
+        self.end_node = int(end_node)  # node id
 
         # Input variables
         self.demand_volume = int(demand_volume)
         self.number_of_demand_paths = int(number_of_demand_paths)
         if not all(isinstance(n, DemandPath) for n in demand_path_list):
-            return 1
+            raise Exception
         self.demand_path_list = demand_path_list
 
         # Output variables
@@ -53,4 +65,3 @@ class DemandPath:
 
     def print_as_line(self):
         return f'{self.demand_path_id} {self.solution_path_signal_count}'
-
