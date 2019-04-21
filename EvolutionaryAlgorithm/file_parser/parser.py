@@ -3,7 +3,7 @@ from model import Link, Demand, DemandPath
 from model import Network
 
 
-def read_links(file) -> (int, list):
+def _read_links(file) -> (int, list):
     number_of_links = int(file.readline().split()[0])
     # Move pointer to second line
 
@@ -17,11 +17,13 @@ def read_links(file) -> (int, list):
             return number_of_links, link_list
 
         link_list.append(
-            Link(idx + 1, int(values[0]), int(values[1]), int(values[2]), float(values[3]), int(values[4]))
+            Link(idx + 1, int(values[0]), int(values[1]),
+                 int(values[2]), float(values[3]), int(values[4]))
         )
+    raise Exception
 
 
-def read_demands(file) -> (int, list):
+def _read_demands(file) -> (int, list):
     next(file)
     number_of_demands = int(file.readline().split()[0])
     next(file)
@@ -35,13 +37,14 @@ def read_demands(file) -> (int, list):
         number_of_demand_paths = int(file.readline().split()[0])
 
         demand_path_list = []
-        for demand_paths_idx in range(number_of_demand_paths):
+        for _ in range(number_of_demand_paths):
             path_values = file.readline().split()
             demand_path_id = path_values[0]
             link_list = list(map(int, path_values[1:]))
             demand_path_list.append(DemandPath(demand_path_id, link_list))
         demands_list.append(
-            Demand(demand_idx + 1, start_node, end_node, demand_volume, number_of_demand_paths, demand_path_list)
+            Demand(demand_idx + 1, start_node, end_node,
+                   demand_volume, number_of_demand_paths, demand_path_list)
         )
         if demand_idx != number_of_demands - 1:
             next(file)
@@ -50,6 +53,6 @@ def read_demands(file) -> (int, list):
 
 def read_file(file_name: str) -> Network:
     with open(file_name, 'r') as file:
-        number_of_links, links_list = read_links(file)
-        number_of_demands, demands_list = read_demands(file)
+        number_of_links, links_list = _read_links(file)
+        number_of_demands, demands_list = _read_demands(file)
     return Network(number_of_links, links_list, number_of_demands, demands_list)

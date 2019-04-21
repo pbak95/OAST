@@ -1,9 +1,5 @@
-#!/usr/bin/python2.7
-import logging
+#!/usr/bin/python3.6
 
-from .network import Network
-from .demand import Demand, DemandPath, DemandFlow, DemandPathFlow
+from .demand import Demand, DemandPath
 from .link import Link
-
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+from .network import Network

@@ -66,6 +66,7 @@ def brute_solve(network: Network) -> Network:
         exit(-1)
 
     # Printing
+    print()
     print("Solution:")
     print(bestSolution)
     print("Number of possible solutions is {}:".format(len(bestSolutionValues)))
