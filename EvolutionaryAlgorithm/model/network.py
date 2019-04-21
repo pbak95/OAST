@@ -18,3 +18,10 @@ class Network:
 
         for idx, demand in enumerate(self.demands_list):
             demand.print()
+
+    def get_all_possible_demands_of_link(self, link_id):
+        result = []
+        for demand in self.demands_list:
+            for path in demand.demand_path_list:
+                if link_id in path.link_list:
+                    result.append((demand.demand_id, path.demand_path_id))

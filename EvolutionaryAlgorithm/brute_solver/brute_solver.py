@@ -21,4 +21,3 @@ def brute_solve(network: Network) -> Network:
     check_solution(network)
 
     return mock_solution(network)
-
