@@ -5,133 +5,115 @@ import time
 
 from model import Network
 
-FALSE_START = False
-
-
-def mock_solution(network) -> Network:
-    links = network.links_list
-    for link in links:
-        link.number_of_fibers = 1
-        link.number_of_signals = 2
-
-    # demands_flow_list = [
-    #     DemandFlow(
-    #         demand_id=1, number_of_demand_paths=1,
-    #         demand_path_flow_list=[DemandPathFlow(path_id=1, path_singal_count=2)]
-    #     ),
-    #     DemandFlow(
-    #         demand_id=2, number_of_demand_paths=1,
-    #         demand_path_flow_list=[DemandPathFlow(path_id=2, path_singal_count=2)]
-    #     )
-    # ]
-    # network.demand_solution = demands_flow_list
-
-    return network
-
 
 def brute_solve(network: Network) -> Network:
     start = time.time()
     print("Bruteforce started!")
 
     # Get all possible permutations of paths
-    possibilities = []
-    for demand in network.demands_list:
-        path_iter = PathIteration()
-        possibilities.append(path_iter.find_combinations(demand.demand_volume, demand.number_of_demand_paths))
+    possibilities = Possibilities(network)
 
-    # Initialize variables
     iteration = Iteration(possibilities)
-    if FALSE_START:
-        iteration.state[0] = 9
-    best_solution = math.inf
-    best_solution_values = []
+
+    best_solution = Solution(math.inf, [])
 
     # For every permutation calculate load on links and how many modules are needed to accommodate this load
-    # Select best solution - can be multiple
+    # Select best solution - can be multiple ones
     while iteration.next_iteration():
-        module_cost = calculate_modules_cost(network, iteration.values)
-
-        if module_cost < best_solution:
-            # Print current best solution
-            print(module_cost, end=" ")
-            best_solution = module_cost
-            best_solution_values = [copy.deepcopy(iteration.values)]
-        elif module_cost == best_solution:
-            best_solution_values.append(copy.deepcopy(iteration.values))
+        competing_solution = calculate_modules_cost(network, iteration.values)
+        best_solution = best_solution.get_better_solution(competing_solution)
 
     end = time.time()
 
-    if best_solution == 0:
-        print("Something went wrong!")
-        exit(-1)
-
-    # Printing
     print()
     print("Solution:")
-    print(best_solution)
-    print("Number of possible solutions is {}:".format(len(best_solution_values)))
-    for solve in best_solution_values:
-        print_fucked_up_array(network, solve)
+    print(best_solution.cost)
+    print("Number of possible solutions is {}:".format(len(best_solution.values)))
+    for solveNumber in range(0, len(best_solution.values)):
+        # print_fucked_up_array(network, solve)
+        best_solution.print(network, solveNumber)
 
     print("Calculations took: {}".format(end - start))
+
+    for demand in range(len(best_solution.values[0])):
+        for path in range(len(best_solution.values[0][0])):
+            try:
+                network.demands_list[demand].demand_path_list[path].solution_path_signal_count = best_solution.values[0][demand][path]
+            except IndexError:
+                print("IndexError number of paths for demand {} is shorter then max {}".format(demand, network.longest_demand_path))
+
+    print(network)
 
     network.update_link_capacity()
     return network
 
 
-def calculate_modules_cost(network, flow_array):
-    modules_cost = 0
-    load = calculate_links_load(network, flow_array)
-    for linkId in range(0, network.number_of_links):
-        link = network.links_list[linkId]
-        # Check if link is not overloaded
-        if load[linkId] < link.maximum_number_of_modules * link.single_module_capacity:
-            modules_used = math.ceil(load[linkId] / link.single_module_capacity)
-            modules_cost = modules_cost + modules_used * link.module_cost
-    return modules_cost
+class Solution(object):
+    def __init__(self, cost: float, values: []):
+        self.cost = cost
+        self.values = values
+
+    def get_better_solution(self, other):
+        if other.cost < self.cost:
+            print(other.cost, end=" ")
+            return other
+        elif other.cost == self.cost:
+            self.append(other.values[0])
+            return self
+        else:
+            return self
+
+    def append(self, new_solution: []):
+        self.values.append(new_solution)
+
+    def print(self, network: Network, solve_number: int):
+
+        row_format = "{:<5}" + "{:^5}" * network.number_of_demands
+        demand_list = ["[%s]" % x for x in range(1, network.number_of_demands + 1)]
+        path_list = ["[%s]" % x for x in range(1, network.longest_demand_path + 1)]
+        transposed_data = zip(*self.values[solve_number])
+
+        print('Routes: \\ Demands:')
+        print(row_format.format("", *demand_list))
+        for path_id, row in enumerate(transposed_data):
+            print(row_format.format(path_list[path_id], *row))
+        print(row_format.format("h(d):",
+                                *[network.demands_list[x].demand_volume for x in range(len(network.demands_list))]))
+        print("Is solution valid: {}".format(validate(network, self.values[solve_number])))
+        print()
 
 
-def calculate_links_load(network, flow_array):
-    load = [0] * network.number_of_links
-    for demand in range(0, network.number_of_demands):
-        for path in range(0, network.demands_list[demand].number_of_demand_paths):
-            flows_running_this_path = flow_array[demand][path]
-            for linkInPath in network.demands_list[demand].demand_path_list[path].link_list:
-                load[linkInPath - 1] = load[linkInPath - 1] + flows_running_this_path
-    return load
+class Possibilities(object):
+    def __init__(self, network: Network):
+        self.possibilities = []
+        for demand in network.demands_list:
+            path_iter = PathIteration()
+            iter_for_demand = path_iter.find_combinations(demand.demand_volume, demand.number_of_demand_paths)
+            for id, perm in enumerate(iter_for_demand):
+                # Fill with -1 if any path is shorter than the longest
+                if len(perm) < network.longest_demand_path:
+                    new_tuple = perm + tuple([-1] * (network.longest_demand_path - len(perm)))
+                    iter_for_demand[id] = new_tuple
+            self.possibilities.append(iter_for_demand)
 
+        self.number_of_demands = len(self.possibilities)
+        self.longest_route = network.longest_demand_path
 
-def validate(network, solution):
-    valid = True
-    for demand in range(0, len(solution)):
-        demand_passed = sum(solution[demand])
-        valid = valid and (demand_passed >= network.demands_list[demand].demand_volume)
-
-    return valid
-
-
-def get_longest_route_in_possibilities(possibility_array):
-    output = 0
-    for demandPossibilities in possibility_array:
-        for possibility in demandPossibilities:
-            if len(possibility) > output:
-                output = len(possibility)
-    return output
+    def __getitem__(self, y):
+        return self.possibilities[y]
 
 
 class Iteration(object):
 
-    def __init__(self, possibilities):
-        self.numberOfDemands = len(possibilities)
+    def __init__(self, possibilities: Possibilities):
         self.possibilities = possibilities
-        self.longestPath = get_longest_route_in_possibilities(possibilities)
         self.values = []
-        self.state = [0] * self.numberOfDemands
-        for i in range(0, self.numberOfDemands):
-            self.values.append([0] * self.longestPath)
+        self.state = [0] * self.possibilities.number_of_demands
+        for i in range(0, self.possibilities.number_of_demands):
+            self.values.append([0] * self.possibilities.longest_route)
 
     def next_iteration(self):
-        for i in reversed(range(0, self.numberOfDemands)):
+        for i in reversed(range(0, self.possibilities.number_of_demands)):
             # Very important '- 1' here
             if self.state[i] < len(self.possibilities[i]) - 1:
                 self.state[i] = self.state[i] + 1
@@ -139,7 +121,7 @@ class Iteration(object):
                 return True
             elif self.state[i - 1] < len(self.possibilities[i - 1]) - 1:
                 self.state[i - 1] = self.state[i - 1] + 1
-                self.state[i:] = [0] * (self.numberOfDemands - i)
+                self.state[i:] = [0] * (self.possibilities.number_of_demands - i)
                 if i == 1:
                     print('%{}'.format(self.state[0] / len(self.possibilities[0]) * 100))
                 self.set_values()
@@ -147,8 +129,7 @@ class Iteration(object):
         return False
 
     def set_values(self):
-        for i in range(0, self.numberOfDemands):
-            # Why there was -1 ?
+        for i in range(0, self.possibilities.number_of_demands):
             self.values[i] = self.possibilities[i][self.state[i]]
 
 
@@ -207,29 +188,32 @@ class PathIteration(object):
         return output
 
 
-# Lets hide this func so nobody will see it
-def print_fucked_up_array(network, array):
-    print()
-    print('Routes: \\ Demands:')
-    print("", end='\t\t')
-    for demand in range(0, len(array)):
-        print("[{}]".format(demand), end='\t')
-    print()
-    print()
-    for path in range(0, len(array[0])):
-        print("[{}]".format(path), end='\t\t')
-        for demad in range(0, len(array)):
-            try:
-                value = array[demad][path]
-                network.demands_list[demad].demand_path_list[path].solution_path_signal_count = int(value)
-            except IndexError:
-                value = " "
+def calculate_modules_cost(network, flow_array) -> Solution:
+    modules_cost = 0
+    load = calculate_links_load(network, flow_array)
+    for linkId in range(0, network.number_of_links):
+        link = network.links_list[linkId]
+        # Check if link is not overloaded
+        if load[linkId] < link.maximum_number_of_modules * link.single_module_capacity:
+            modules_used = math.ceil(load[linkId] / link.single_module_capacity)
+            modules_cost = modules_cost + modules_used * link.module_cost
+    return Solution(modules_cost, [copy.deepcopy(flow_array)])
 
-            print(value, end='\t')
-        print()
-    print()
-    print("h(d):", end='\t\t')
-    for demand in range(0, len(array)):
-        print(network.demands_list[demand].demand_volume, end='\t')
-    print()
-    print("Is solution valid: {}".format(validate(network, array)))
+
+def calculate_links_load(network, flow_array):
+    load = [0] * network.number_of_links
+    for demand in range(0, network.number_of_demands):
+        for path in range(0, network.demands_list[demand].number_of_demand_paths):
+            flows_running_this_path = flow_array[demand][path]
+            for linkInPath in network.demands_list[demand].demand_path_list[path].link_list:
+                load[linkInPath - 1] = load[linkInPath - 1] + flows_running_this_path
+    return load
+
+
+def validate(network, solution):
+    valid = True
+    for demand in range(0, len(solution)):
+        demand_passed = sum(solution[demand])
+        valid = valid and (demand_passed >= network.demands_list[demand].demand_volume)
+
+    return valid

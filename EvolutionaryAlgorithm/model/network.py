@@ -16,6 +16,7 @@ class Network:
         self.links_list = links_list
         self.number_of_demands = number_of_demands
         self.demands_list = demands_list
+        self.longest_demand_path = max((len(l.demand_path_list), i) for i, l in enumerate(demands_list))[0]
 
     def print(self):
         print('### INPUT ###')
