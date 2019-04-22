@@ -5,7 +5,7 @@ import time
 
 from model import Network
 
-FALSE_START = True
+FALSE_START = False
 
 
 def mock_solution(network) -> Network:
