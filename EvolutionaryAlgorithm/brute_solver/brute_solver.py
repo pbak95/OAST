@@ -39,6 +39,7 @@ def brute_solve(network: Network) -> Network:
         elif module_cost == best_solution:
             best_solution_values.append(copy.deepcopy(iteration.values))
 
+    update_progress(1)
     end = time.time()
 
     if best_solution == 0:
