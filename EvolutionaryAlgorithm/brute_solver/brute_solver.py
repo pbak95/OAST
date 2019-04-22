@@ -18,19 +18,17 @@ def brute_solve(network: Network) -> Network:
 
     best_solution = Solution(math.inf, [])
 
-    update_progress(0)
+    update_progress(0, 'infinity')
     # For every permutation calculate load on links and how many modules are needed to accommodate this load
     # Select best solution - can be multiple ones
-    while iteration.next_iteration():
+    while iteration.next_iteration(str(best_solution.cost)):
         competing_solution = calculate_modules_cost(network, iteration.values)
         best_solution = best_solution.compare(competing_solution)
 
-    update_progress(1)
+    update_progress(1, str(best_solution.cost))
     end = time.time()
 
     print()
-    print("Solution:")
-    print(best_solution.cost)
     print("Number of possible solutions is {}:".format(len(best_solution.values)))
     for solveNumber in range(len(best_solution.values)):
         best_solution.print(network, solveNumber)
@@ -121,7 +119,7 @@ class Iteration(object):
         for i in range(0, self.possibilities.number_of_demands):
             self.values.append([0] * self.possibilities.longest_route)
 
-    def next_iteration(self):
+    def next_iteration(self, modules_used: str):
         for i in reversed(range(0, self.possibilities.number_of_demands)):
             # Very important '- 1' here
             if self.state[i] < len(self.possibilities[i]) - 1:
@@ -132,7 +130,7 @@ class Iteration(object):
                 self.state[i - 1] = self.state[i - 1] + 1
                 self.state[i:] = [0] * (self.possibilities.number_of_demands - i)
                 if i == 1:
-                    update_progress(self.state[0] / len(self.possibilities[0]))
+                    update_progress(self.state[0] / len(self.possibilities[0]), modules_used)
                 self.set_values()
                 return True
         return False
@@ -220,7 +218,7 @@ def calculate_links_load(network, flow_array):
 
 
 # Displays or updates a console progress bar
-def update_progress(progress):
+def update_progress(progress, modules: str):
     bar_length = 100
     status = ""
     if isinstance(progress, int):
@@ -235,6 +233,7 @@ def update_progress(progress):
         progress = 1
         status = "Done...\r\n"
     block = int(round(bar_length*progress))
-    text = "\rPercent: [{0}] {1}% {2}".format( "#"*block + "-"*(bar_length-block), progress*100, status)
+    text = "\rModules used: [{3}].. Percent: [{0}] {1}% {2}".format( "#"*block + "-"*(bar_length-block),
+                                                                   progress*100, status, modules)
     sys.stdout.write(text)
     sys.stdout.flush()
