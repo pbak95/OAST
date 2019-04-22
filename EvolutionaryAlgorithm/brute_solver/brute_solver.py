@@ -2,6 +2,8 @@ import copy
 import itertools
 import math
 import time
+import sys
+from tqdm import tqdm
 
 from model import Network
 
@@ -141,7 +143,7 @@ class Iteration(object):
                 self.state[i - 1] = self.state[i - 1] + 1
                 self.state[i:] = [0] * (self.numberOfDemands - i)
                 if i == 1:
-                    print('%{}'.format(self.state[0] / len(self.possibilities[0]) * 100))
+                    update_progress(self.state[0] / len(self.possibilities[0]))
                 self.set_values()
                 return True
         return False
@@ -233,3 +235,24 @@ def print_fucked_up_array(network, array):
         print(network.demands_list[demand].demand_volume, end='\t')
     print()
     print("Is solution valid: {}".format(validate(network, array)))
+
+
+# Displays or updates a console progress bar
+def update_progress(progress):
+    bar_length = 100
+    status = ""
+    if isinstance(progress, int):
+        progress = float(progress)
+    if not isinstance(progress, float):
+        progress = 0
+        status = "error: progress var must be float\r\n"
+    if progress < 0:
+        progress = 0
+        status = "Halt...\r\n"
+    if progress >= 1:
+        progress = 1
+        status = "Done...\r\n"
+    block = int(round(bar_length*progress))
+    text = "\rPercent: [{0}] {1}% {2}".format( "#"*block + "-"*(bar_length-block), progress*100, status)
+    sys.stdout.write(text)
+    sys.stdout.flush()
