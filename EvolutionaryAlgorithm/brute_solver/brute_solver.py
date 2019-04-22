@@ -75,7 +75,8 @@ def brute_solve(network: Network) -> Network:
 
     print("Calculations took: {}".format(end - start))
 
-    return mock_solution(network)
+    network.update_link_capacity()
+    return network
 
 
 def calculate_modules_cost(network, flow_array):
@@ -224,6 +225,10 @@ def print_fucked_up_array(network, array):
                 value = " "
 
             print("\t" + str(value), end='')
+            if value != " ":
+                # print(f'x: {x}, y: {y}')
+                # network.demands_list[x].demand_path_list[y].solution_path_signal_count = int(value)
+                pass
         print()
     print()
     print("h(d):", end='')
