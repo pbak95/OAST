@@ -18,11 +18,12 @@ def brute_solve(network: Network) -> Network:
 
     best_solution = Solution(math.inf, [])
 
+    update_progress(0)
     # For every permutation calculate load on links and how many modules are needed to accommodate this load
     # Select best solution - can be multiple ones
     while iteration.next_iteration():
         competing_solution = calculate_modules_cost(network, iteration.values)
-        best_solution = best_solution.get_better_solution(competing_solution)
+        best_solution = best_solution.compare(competing_solution)
 
     update_progress(1)
     end = time.time()
@@ -41,6 +42,7 @@ def brute_solve(network: Network) -> Network:
             try:
                 network.demands_list[demand].demand_path_list[path].solution_path_signal_count = best_solution.values[0][demand][path]
             except IndexError:
+                # Should be only printed in debug
                 print("IndexError number of paths for demand {} is shorter then max {}".format(demand, network.longest_demand_path))
 
     network.update_link_capacity()
@@ -52,7 +54,7 @@ class Solution(object):
         self.cost = cost
         self.values = values
 
-    def get_better_solution(self, other):
+    def compare(self, other):
         if other.cost < self.cost:
             print(other.cost, end=" ")
             return other
@@ -78,8 +80,16 @@ class Solution(object):
             print(row_format.format(path_list[path_id], *row))
         print(row_format.format("h(d):",
                                 *[network.demands_list[x].demand_volume for x in range(len(network.demands_list))]))
-        print("Is solution valid: {}".format(validate(network, self.values[solve_number])))
+        print("Is solution valid: {}".format(self.validate(network, solve_number)))
         print()
+
+    def validate(self, network: Network, solve_number: int):
+        valid = True
+        for demand in range(len(self.values[solve_number])):
+            demand_passed = sum(self.values[solve_number][demand])
+            valid = valid and (demand_passed >= network.demands_list[demand].demand_volume)
+
+        return valid
 
 
 class Possibilities(object):
@@ -91,7 +101,7 @@ class Possibilities(object):
             for id, perm in enumerate(iter_for_demand):
                 # Fill with -1 if any path is shorter than the longest
                 if len(perm) < network.longest_demand_path:
-                    new_tuple = perm + tuple([-1] * (network.longest_demand_path - len(perm)))
+                    new_tuple = perm + tuple([0] * (network.longest_demand_path - len(perm)))
                     iter_for_demand[id] = new_tuple
             self.possibilities.append(iter_for_demand)
 
@@ -208,14 +218,6 @@ def calculate_links_load(network, flow_array):
                 load[linkInPath - 1] = load[linkInPath - 1] + flows_running_this_path
     return load
 
-
-def validate(network, solution):
-    valid = True
-    for demand in range(0, len(solution)):
-        demand_passed = sum(solution[demand])
-        valid = valid and (demand_passed >= network.demands_list[demand].demand_volume)
-
-    return valid
 
 # Displays or updates a console progress bar
 def update_progress(progress):
