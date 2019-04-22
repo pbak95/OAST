@@ -54,7 +54,6 @@ class Solution(object):
 
     def compare(self, other):
         if other.cost < self.cost:
-            print(other.cost, end=" ")
             return other
         elif other.cost == self.cost:
             self.append(other.values[0])
