@@ -5,7 +5,7 @@ import time
 
 from model import Network
 
-FALSE_START = False
+FALSE_START = True
 
 
 def mock_solution(network) -> Network:
@@ -148,8 +148,8 @@ class Iteration(object):
 
     def set_values(self):
         for i in range(0, self.numberOfDemands):
-            self.values[i] = self.possibilities[i][self.state[i] - 1]
-        # print(self.state)
+            # Why there was -1 ?
+            self.values[i] = self.possibilities[i][self.state[i]]
 
 
 class PathIteration(object):
@@ -211,28 +211,25 @@ class PathIteration(object):
 def print_fucked_up_array(network, array):
     print()
     print('Routes: \\ Demands:')
-    print("\t", end='')
+    print("", end='\t\t')
     for demand in range(0, len(array)):
-        print("\t[" + str(demand) + "]", end='')
+        print("[{}]".format(demand), end='\t')
     print()
     print()
-    for x in range(0, len(array[0])):
-        print("[" + str(x) + "]\t", end='')
-        for y in range(0, len(array)):
+    for path in range(0, len(array[0])):
+        print("[{}]".format(path), end='\t\t')
+        for demad in range(0, len(array)):
             try:
-                value = array[y][x]
+                value = array[demad][path]
+                network.demands_list[demad].demand_path_list[path].solution_path_signal_count = int(value)
             except IndexError:
                 value = " "
 
-            print("\t" + str(value), end='')
-            if value != " ":
-                # print(f'x: {x}, y: {y}')
-                # network.demands_list[x].demand_path_list[y].solution_path_signal_count = int(value)
-                pass
+            print(value, end='\t')
         print()
     print()
-    print("h(d):", end='')
+    print("h(d):", end='\t\t')
     for demand in range(0, len(array)):
-        print("\t" + str(network.demands_list[demand].demand_volume), end='')
+        print(network.demands_list[demand].demand_volume, end='\t')
     print()
     print("Is solution valid: {}".format(validate(network, array)))
