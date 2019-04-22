@@ -2,6 +2,7 @@ import copy
 import itertools
 import math
 import time
+import sys
 
 from model import Network
 
@@ -23,14 +24,14 @@ def brute_solve(network: Network) -> Network:
         competing_solution = calculate_modules_cost(network, iteration.values)
         best_solution = best_solution.get_better_solution(competing_solution)
 
+    update_progress(1)
     end = time.time()
 
     print()
     print("Solution:")
     print(best_solution.cost)
     print("Number of possible solutions is {}:".format(len(best_solution.values)))
-    for solveNumber in range(0, len(best_solution.values)):
-        # print_fucked_up_array(network, solve)
+    for solveNumber in range(len(best_solution.values)):
         best_solution.print(network, solveNumber)
 
     print("Calculations took: {}".format(end - start))
@@ -41,8 +42,6 @@ def brute_solve(network: Network) -> Network:
                 network.demands_list[demand].demand_path_list[path].solution_path_signal_count = best_solution.values[0][demand][path]
             except IndexError:
                 print("IndexError number of paths for demand {} is shorter then max {}".format(demand, network.longest_demand_path))
-
-    print(network)
 
     network.update_link_capacity()
     return network
@@ -68,7 +67,7 @@ class Solution(object):
 
     def print(self, network: Network, solve_number: int):
 
-        row_format = "{:<5}" + "{:^5}" * network.number_of_demands
+        row_format = "{:<7}" + "{:^5}" * network.number_of_demands
         demand_list = ["[%s]" % x for x in range(1, network.number_of_demands + 1)]
         path_list = ["[%s]" % x for x in range(1, network.longest_demand_path + 1)]
         transposed_data = zip(*self.values[solve_number])
@@ -123,7 +122,7 @@ class Iteration(object):
                 self.state[i - 1] = self.state[i - 1] + 1
                 self.state[i:] = [0] * (self.possibilities.number_of_demands - i)
                 if i == 1:
-                    print('%{}'.format(self.state[0] / len(self.possibilities[0]) * 100))
+                    update_progress(self.state[0] / len(self.possibilities[0]))
                 self.set_values()
                 return True
         return False
@@ -217,3 +216,23 @@ def validate(network, solution):
         valid = valid and (demand_passed >= network.demands_list[demand].demand_volume)
 
     return valid
+
+# Displays or updates a console progress bar
+def update_progress(progress):
+    bar_length = 100
+    status = ""
+    if isinstance(progress, int):
+        progress = float(progress)
+    if not isinstance(progress, float):
+        progress = 0
+        status = "error: progress var must be float\r\n"
+    if progress < 0:
+        progress = 0
+        status = "Halt...\r\n"
+    if progress >= 1:
+        progress = 1
+        status = "Done...\r\n"
+    block = int(round(bar_length*progress))
+    text = "\rPercent: [{0}] {1}% {2}".format( "#"*block + "-"*(bar_length-block), progress*100, status)
+    sys.stdout.write(text)
+    sys.stdout.flush()
