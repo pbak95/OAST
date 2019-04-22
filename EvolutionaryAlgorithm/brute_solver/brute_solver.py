@@ -36,80 +36,80 @@ def brute_solve(network: Network) -> Network:
     # Get all possible permutations of paths
     possibilities = []
     for demand in network.demands_list:
-        pathIter = PathIteration()
-        possibilities.append(pathIter.findCombinations(demand.demand_volume, demand.number_of_demand_paths))
+        path_iter = PathIteration()
+        possibilities.append(path_iter.find_combinations(demand.demand_volume, demand.number_of_demand_paths))
 
     # Initialize variables
     iteration = Iteration(possibilities)
     if FALSE_START:
         iteration.state[0] = 9
-    bestSolution = math.inf
-    bestSolutionValues = []
+    best_solution = math.inf
+    best_solution_values = []
 
     # For every permutation calculate load on links and how many modules are needed to accommodate this load
     # Select best solution - can be multiple
-    while iteration.nextIteration():
-        moduleCost = calculateModulesCost(network, iteration.values)
+    while iteration.next_iteration():
+        module_cost = calculate_modules_cost(network, iteration.values)
 
-        if moduleCost < bestSolution:
+        if module_cost < best_solution:
             # Print current best solution
-            print(moduleCost, end=" ")
-            bestSolution = moduleCost
-            bestSolutionValues = [copy.deepcopy(iteration.values)]
-        elif moduleCost == bestSolution:
-            bestSolutionValues.append(copy.deepcopy(iteration.values))
+            print(module_cost, end=" ")
+            best_solution = module_cost
+            best_solution_values = [copy.deepcopy(iteration.values)]
+        elif module_cost == best_solution:
+            best_solution_values.append(copy.deepcopy(iteration.values))
 
     end = time.time()
 
-    if bestSolution == 0:
+    if best_solution == 0:
         print("Something went wrong!")
         exit(-1)
 
     # Printing
     print()
     print("Solution:")
-    print(bestSolution)
-    print("Number of possible solutions is {}:".format(len(bestSolutionValues)))
-    for solve in bestSolutionValues:
-        printFuckedUpArray(network, solve)
+    print(best_solution)
+    print("Number of possible solutions is {}:".format(len(best_solution_values)))
+    for solve in best_solution_values:
+        print_fucked_up_array(network, solve)
 
     print("Calculations took: {}".format(end - start))
 
     return mock_solution(network)
 
 
-def calculateModulesCost(network, flow_array):
-    modulesCost = 0
-    load = calculateLinksLoad(network, flow_array)
+def calculate_modules_cost(network, flow_array):
+    modules_cost = 0
+    load = calculate_links_load(network, flow_array)
     for linkId in range(0, network.number_of_links):
         link = network.links_list[linkId]
         # Check if link is not overloaded
         if load[linkId] < link.maximum_number_of_modules * link.single_module_capacity:
-            modulesUsed = math.ceil(load[linkId] / link.single_module_capacity)
-            modulesCost = modulesCost + modulesUsed * link.module_cost
-    return modulesCost
+            modules_used = math.ceil(load[linkId] / link.single_module_capacity)
+            modules_cost = modules_cost + modules_used * link.module_cost
+    return modules_cost
 
 
-def calculateLinksLoad(network, flow_array):
+def calculate_links_load(network, flow_array):
     load = [0] * network.number_of_links
     for demand in range(0, network.number_of_demands):
         for path in range(0, network.demands_list[demand].number_of_demand_paths):
-            flowsRunningThisPath = flow_array[demand][path]
+            flows_running_this_path = flow_array[demand][path]
             for linkInPath in network.demands_list[demand].demand_path_list[path].link_list:
-                load[linkInPath - 1] = load[linkInPath - 1] + flowsRunningThisPath
+                load[linkInPath - 1] = load[linkInPath - 1] + flows_running_this_path
     return load
 
 
 def validate(network, solution):
     valid = True
     for demand in range(0, len(solution)):
-        demandPassed = sum(solution[demand])
-        valid = valid and (demandPassed >= network.demands_list[demand].demand_volume)
+        demand_passed = sum(solution[demand])
+        valid = valid and (demand_passed >= network.demands_list[demand].demand_volume)
 
     return valid
 
 
-def getLongestRouteInPossibilities(possibility_array):
+def get_longest_route_in_possibilities(possibility_array):
     output = 0
     for demandPossibilities in possibility_array:
         for possibility in demandPossibilities:
@@ -123,29 +123,29 @@ class Iteration(object):
     def __init__(self, possibilities):
         self.numberOfDemands = len(possibilities)
         self.possibilities = possibilities
-        self.longestPath = getLongestRouteInPossibilities(possibilities)
+        self.longestPath = get_longest_route_in_possibilities(possibilities)
         self.values = []
         self.state = [0] * self.numberOfDemands
         for i in range(0, self.numberOfDemands):
             self.values.append([0] * self.longestPath)
 
-    def nextIteration(self):
+    def next_iteration(self):
         for i in reversed(range(0, self.numberOfDemands)):
             # Very important '- 1' here
             if self.state[i] < len(self.possibilities[i]) - 1:
                 self.state[i] = self.state[i] + 1
-                self.setValues()
+                self.set_values()
                 return True
             elif self.state[i - 1] < len(self.possibilities[i - 1]) - 1:
                 self.state[i - 1] = self.state[i - 1] + 1
                 self.state[i:] = [0] * (self.numberOfDemands - i)
                 if i == 1:
                     print('%{}'.format(self.state[0] / len(self.possibilities[0]) * 100))
-                self.setValues()
+                self.set_values()
                 return True
         return False
 
-    def setValues(self):
+    def set_values(self):
         for i in range(0, self.numberOfDemands):
             self.values[i] = self.possibilities[i][self.state[i] - 1]
         # print(self.state)
@@ -153,8 +153,8 @@ class Iteration(object):
 
 class PathIteration(object):
 
-    def findCombinationsUtil(self, arr, index, buckets, num,
-                             reduced_num, output):
+    def find_combinations_util(self, arr, index, buckets, num,
+                               reduced_num, output):
 
         # Base condition
         if reduced_num < 0:
@@ -163,10 +163,10 @@ class PathIteration(object):
         # If combination is
         # found, print it
         if reduced_num == 0:
-            currArray = [0] * buckets
-            currArray[:index] = arr[:index]
-            allPerm = list(itertools.permutations(currArray))
-            for solution in set(allPerm):
+            curr_array = [0] * buckets
+            curr_array[:index] = arr[:index]
+            all_perm = list(itertools.permutations(curr_array))
+            for solution in set(all_perm):
                 output.append(solution)
             return
 
@@ -186,15 +186,15 @@ class PathIteration(object):
 
             # call recursively with
             # reduced number
-            self.findCombinationsUtil(arr, index + 1, buckets, num,
-                                      reduced_num - k, output)
+            self.find_combinations_util(arr, index + 1, buckets, num,
+                                        reduced_num - k, output)
 
             # Function to find out all
 
     # combinations of positive numbers
     # that add upto given number.
     # It uses findCombinationsUtil()
-    def findCombinations(self, n, buckets):
+    def find_combinations(self, n, buckets):
 
         output = []
         # array to store the combinations
@@ -202,12 +202,12 @@ class PathIteration(object):
         arr = [0] * buckets
 
         # find all combinations
-        self.findCombinationsUtil(arr, 0, buckets, n, n, output)
+        self.find_combinations_util(arr, 0, buckets, n, n, output)
         return output
 
 
 # Lets hide this func so nobody will see it
-def printFuckedUpArray(network, array):
+def print_fucked_up_array(network, array):
     print()
     print('Routes: \\ Demands:')
     print("\t", end='')
