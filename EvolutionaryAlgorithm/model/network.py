@@ -23,8 +23,8 @@ class Network:
         print(f'Number of links: {self.number_of_links}')
         print(f'Number of demands: {self.number_of_demands}')
 
-        for _, link in enumerate(self.links_list):
-            link.print()
+        for link in self.links_list:
+            link.print_result()
 
         for _, demand in enumerate(self.demands_list):
             demand.print()

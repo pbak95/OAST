@@ -42,6 +42,7 @@ def brute_solve(network: Network) -> Network:
                 print("IndexError number of paths for demand {} is shorter then max {}".format(demand, network.longest_demand_path))
 
     network.update_link_capacity()
+    network.print()
     return network
 
 
