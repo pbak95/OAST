@@ -45,4 +45,4 @@ class Network:
                 for path in demand.demand_path_list:
                     if link.link_id in path.link_list and path.solution_path_signal_count != 0:
                         link.number_of_signals = link.number_of_signals + 1
-                        link.number_of_fibers = link.single_module_capacity * path.solution_path_signal_count
+                        link.number_of_fibers = link.number_of_fibers + path.solution_path_signal_count

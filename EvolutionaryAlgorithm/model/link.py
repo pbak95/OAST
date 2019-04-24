@@ -38,8 +38,9 @@ class Link:
 
     def print_result(self):
         print(f'\tLink idx: {self.link_id}')
-        for attr in ('start_node', 'end_node', 'number_of_signals', 'number_of_fibers'):
+        for attr in ('start_node', 'end_node', 'number_of_signals'):
             print(f'\t\t{attr} = {getattr(self, attr)}')
+        print(f'\t\tnumber_of_fibers = {getattr(self, attr)} x {self.single_module_capacity} Mbps')
 
     def print_result_to_file(self):
         return f'{self.link_id} {self.number_of_signals} {self.number_of_fibers}'

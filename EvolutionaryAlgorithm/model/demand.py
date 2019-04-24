@@ -50,17 +50,20 @@ class DemandPath:
         self.solution_path_signal_count = solution_path_signal_count
 
     def __str__(self):
-        return f'(demand_path_id = {self.demand_path_id}; link_list = ({self.link_list}))'
+        return f'\n\t\tdemand_path_id = {self.demand_path_id};\n\t\t\t\t link_list = ' \
+               f'({self.link_list}, count ={self.solution_path_signal_count})'
 
     def __unicode__(self):
-        return f'(demand_path_id = {self.demand_path_id}; link_list = ({self.link_list}))'
+        return f'\n\t\tdemand_path_id = {self.demand_path_id};\n\t\t\t\t link_list = ' \
+               f'({self.link_list}, count ={self.solution_path_signal_count})'
 
     def __repr__(self):
-        return f'(demand_path_id = {self.demand_path_id}; link_list = ({self.link_list}))'
+        return f'\n\t\tdemand_path_id = {self.demand_path_id};\n\t\t\t\t link_list = ' \
+               f'({self.link_list}, count ={self.solution_path_signal_count})'
 
     def print(self):
         for attr in dir(self):
-            if attr in ('demand_path_id', 'link_list'):
+            if attr in ('demand_path_id', 'link_list', 'solution_path_signal_count'):
                 print(f'\t\t{attr} = {getattr(self, attr)}')
 
     def print_as_line(self):
