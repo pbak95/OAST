@@ -14,8 +14,6 @@ def brute_solve(network: Network) -> Network:
 
     iteration = Iteration(possibilities)
 
-    iteration.state[0] = 9
-
     best_solution = Solution(math.inf, [])
 
     iteration.update_progress(0, 'infinity')

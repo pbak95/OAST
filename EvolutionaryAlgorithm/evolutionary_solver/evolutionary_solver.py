@@ -31,9 +31,9 @@ def evolutionary_solve(network: Network) -> Network:
 
     # initialisation of population
     population = init_population(population_size, network)
-    for idx, chromosome in enumerate(population):
-        print('Chromosome: ', idx)
-        chromosome.print()
+    # for idx, chromosome in enumerate(population):
+    #     print('Chromosome: ', idx)
+    #     chromosome.print()
 
     best_chromosome = None
     i = 0
@@ -65,8 +65,9 @@ def evolutionary_solve(network: Network) -> Network:
         if i % best_for_iterations == 0:
             best_chromosome = population[0]
         i += 1
-
-    return mock_solution(network)
+    result_network = update_network_link_parameters(best_chromosome, network)
+    result_network.print()
+    return result_network
 
 
 def init_population(population_number: int, network: Network) -> list:
@@ -221,3 +222,11 @@ class Gene(object):
 
     def print(self):
         print(self.paths)
+
+
+def update_network_link_parameters(best_chromosome: Chromosome, network: Network) -> Network:
+    link_load = best_chromosome.calculate_link_load()
+    for link in network.links_list:
+        link.number_of_signals = link_load[link.link_id - 1]
+        link.number_of_fibers = ceil(link_load[link.link_id - 1] / link.single_module_capacity)
+    return network
