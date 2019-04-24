@@ -20,8 +20,8 @@ def main():
     network_4.print()
 
     # Find solutions.
-    network = brute_solve(network_4)
-    write_file('output/net4_brute_solution.txt', network)
+    # network = brute_solve(network_4)
+    # write_file('output/net4_brute_solution.txt', network)
     network = evolutionary_solve(network_4)
     write_file('output/net4_evolutionary_solution.txt', network)
 
