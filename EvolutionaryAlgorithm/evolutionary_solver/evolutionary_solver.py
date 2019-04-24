@@ -24,6 +24,7 @@ def mock_solution(network) -> Network:
 def evolutionary_solve(network: Network) -> Network:
     population_size = 5
     mutation_probability = 0.1
+    best_for_iterations = 30
     # Solve here
     # TODO add evolutionary algorithm
     check_solution(network)
@@ -34,26 +35,36 @@ def evolutionary_solve(network: Network) -> Network:
         print('Chromosome: ', idx)
         chromosome.print()
 
-    # loop START
+    best_chromosome = None
+    i = 0
+    while True:
 
-    # pairs selection
-    pairs = select_pairs(population)
-    for idx, pair in enumerate(pairs):
-        print('Pair: ', idx)
-        pair[0].print()
-        pair[1].print()
-    # crossover inside pairs, new population consists of children from each pair in pairs
-    new_population = make_crossover(pairs)
+        # pairs selection
+        pairs = select_pairs(population)
+        # for idx, pair in enumerate(pairs):
+        #     print('Pair: ', idx)
+        #     pair[0].print()
+        #     pair[1].print()
+        # crossover inside pairs, new population consists of children from each pair in pairs
+        new_population = make_crossover(pairs)
 
-    # mutation in new population
-    for chromosome in new_population:
-        chromosome.mutate(mutation_probability)
+        # mutation in new population
+        for chromosome in new_population:
+            chromosome.mutate(mutation_probability)
 
-    # update population based on fitnesses
+        # set next population parents based on current population and their childes
+        population = sorted(new_population + population)[0:population_size + 1]
 
-    # stopping criterium
+        # stopping criterium
+        if i > 0 and i % best_for_iterations == 0:
+            if best_chromosome.fitness == population[0].fitness:
+                print('BEST SOLUTION IN ITERATION: ', i)
+                best_chromosome.print()
+                break
 
-    # loop END
+        if i % best_for_iterations == 0:
+            best_chromosome = population[0]
+        i += 1
 
     return mock_solution(network)
 
@@ -177,7 +188,7 @@ class Chromosome(object):
 
 
 class Gene(object):
-    def __init__(self, demand: Demand,  paths_number: int):
+    def __init__(self, demand: Demand, paths_number: int):
         """
         Represents volume load among all paths for particular demand
         :param demand: demand which we want to split into paths
