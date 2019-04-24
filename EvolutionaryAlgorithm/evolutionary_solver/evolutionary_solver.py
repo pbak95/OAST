@@ -1,3 +1,5 @@
+from math import ceil
+
 from model import Network, Demand
 from solution_checker import check_solution
 from random import randint
@@ -18,7 +20,7 @@ def mock_solution(network) -> Network:
 
 
 def evolutionary_solve(network: Network) -> Network:
-    population_number = 10
+    population_number = 2
     # Solve here
     # TODO add evolutionary algorithm
     check_solution(network)
@@ -65,6 +67,7 @@ class Chromosome(object):
         self.number_of_demands = network.number_of_demands
         self.demands_list = network.demands_list
         self.genes = self.init_genes(self.demands_list, network.longest_demand_path)
+        self.fitness = self.calculate_fitness()
 
     @staticmethod
     def init_genes(demands_list: list, paths_number: int) -> list:
@@ -73,9 +76,38 @@ class Chromosome(object):
             genes.append(Gene(demands_list[idx], paths_number))
         return genes
 
+    def calculate_fitness(self) -> int:
+        """
+        Calculate chromosome fitness which is the summary cost of all modules for each link in the network. Modules
+        number for each link is calculated based on link load.
+        """
+        fitness = 0
+        link_load = self.calculate_link_load()
+        for link in self.links_list:
+            fitness += ceil(link_load[link.link_id - 1] / link.single_module_capacity) * link.module_cost
+        return fitness
+
+    def calculate_link_load(self) -> list:
+        """
+        Calculate link load on the basis of demand volume for each demand path
+        :return: list of link load for each link where load index is equal (link_id - 1)
+        """
+        load = [0] * self.number_of_links
+        for demand in range(0, self.number_of_demands):
+            for path in range(0, self.demands_list[demand].number_of_demand_paths):
+                flows_running_this_path = self.genes[demand].paths[path]
+                for linkInPath in self.demands_list[demand].demand_path_list[path].link_list:
+                    load[linkInPath - 1] = load[linkInPath - 1] + flows_running_this_path
+        return load
+
     def print(self):
         for gene in self.genes:
             gene.print()
+        self.print_link_load()
+        print('Fitness: ', self.fitness)
+
+    def print_link_load(self):
+        print('Link load: ', self.calculate_link_load())
 
 
 class Gene(object):
