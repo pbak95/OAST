@@ -76,6 +76,7 @@ class Solution(object):
             print(row_format.format(path_list[path_id], *row))
         print(row_format.format("h(d):",
                                 *[network.demands_list[x].demand_volume for x in range(len(network.demands_list))]))
+        print("Solution cost: {}".format(self.cost))
         print("Is solution valid: {}".format(self.validate(network, solve_number)))
         print()
 

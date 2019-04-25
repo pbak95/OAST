@@ -3,7 +3,6 @@ import math
 from math import ceil
 
 from model import Network, Demand
-from solution_checker import check_solution
 from random import randint, random
 
 
@@ -22,12 +21,9 @@ def mock_solution(network) -> Network:
 
 
 def evolutionary_solve(network: Network) -> Network:
-    population_size = 5
-    mutation_probability = 0.1
-    best_for_iterations = 30
-    # Solve here
-    # TODO add evolutionary algorithm
-    check_solution(network)
+    population_size = 20
+    mutation_probability = 0.01
+    best_for_iterations = 10
 
     # initialisation of population
     population = init_population(population_size, network)
@@ -38,6 +34,11 @@ def evolutionary_solve(network: Network) -> Network:
     best_chromosome = None
     i = 0
     while True:
+
+        print("OLD POPULATION:")
+        for o in population:
+            o.update_fitness()
+            o.print()
 
         # pairs selection
         pairs = select_pairs(population)
@@ -51,9 +52,14 @@ def evolutionary_solve(network: Network) -> Network:
         # mutation in new population
         for chromosome in new_population:
             chromosome.mutate(mutation_probability)
+            chromosome.update_fitness()
 
         # set next population parents based on current population and their childes
-        population = sorted(new_population + population)[0:population_size + 1]
+        population = sorted(sorted(population)[0:2] + sorted(new_population + population)[0:population_size - 2])
+
+        print("NEW POPULATION:")
+        for n in population:
+            n.print()
 
         # stopping criterium
         if i > 0 and i % best_for_iterations == 0:
@@ -74,12 +80,11 @@ def init_population(population_number: int, network: Network) -> list:
     chromosomes = []
     for _ in range(0, population_number):
         chromosomes.append(Chromosome(network))
-    return chromosomes
+    return sorted(chromosomes)
 
 
 def select_pairs(population: list) -> list:
-    population_by_fitness = sorted(population)
-    return list(zip(population_by_fitness[::2], population_by_fitness[1::2]))
+    return list(zip(population[::2], population[1::2]))
 
 
 def make_crossover(pairs: list) -> list:
@@ -96,11 +101,11 @@ def crossover(parents_pair):
     second_child_genes = []
     for idx in range(0, len(parents_pair[0].genes)):
         if random() < 0.5:
-            first_child_genes.append(parents_pair[0].genes[idx])
-            second_child_genes.append(parents_pair[1].genes[idx])
+            first_child_genes.append(copy.deepcopy(parents_pair[0].genes[idx]))
+            second_child_genes.append(copy.deepcopy(parents_pair[1].genes[idx]))
         else:
-            first_child_genes.append(parents_pair[1].genes[idx])
-            second_child_genes.append(parents_pair[0].genes[idx])
+            first_child_genes.append(copy.deepcopy(parents_pair[1].genes[idx]))
+            second_child_genes.append(copy.deepcopy(parents_pair[0].genes[idx]))
 
     # copy Network metadata which is common for all Chromosomes
     first_child: Chromosome = copy.deepcopy(parents_pair[0])
@@ -141,6 +146,7 @@ class Chromosome(object):
         for gene in self.genes:
             if random() < mutation_probability:
                 gene.mutate()
+                self.update_fitness()
 
     def update_fitness(self):
         self.fitness = self.calculate_fitness()
@@ -178,10 +184,12 @@ class Chromosome(object):
         return load
 
     def print(self):
-        for gene in self.genes:
-            gene.print()
+        # for gene in self.genes:
+        #     gene.print()
         self.print_link_load()
         print('Fitness: ', self.fitness)
+        # self.update_fitness()
+        # print('UPDATED Fitness: ', self.fitness)
         print('\n')
 
     def print_link_load(self):
