@@ -1,9 +1,11 @@
 import copy
 import math
+
 from math import ceil
 
+from evolutionary_solver.config_reader import get_config
 from model import Network, Demand
-from random import randint, random
+from random import randint, random, seed
 
 
 def mock_solution(network) -> Network:
@@ -21,9 +23,11 @@ def mock_solution(network) -> Network:
 
 
 def evolutionary_solve(network: Network) -> Network:
-    population_size = 20
-    mutation_probability = 0.01
-    best_for_iterations = 10
+    config = get_config()
+    seed(config.seed)
+    population_size = config.population_size
+    mutation_probability = config.mutation_probability
+    best_for_iterations = config.stop_arg
 
     # initialisation of population
     population = init_population(population_size, network)
