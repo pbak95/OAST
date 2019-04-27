@@ -1,5 +1,6 @@
 import copy
 import math
+import time
 
 from math import ceil
 
@@ -8,35 +9,22 @@ from model import Network, Demand
 from random import randint, random, seed
 
 
-def mock_solution(network) -> Network:
-    links = network.links_list
-    for link in links:
-        link.number_of_fibers = 1
-        link.number_of_signals = 2
-
-    for demand in network.demands_list:
-        demand.solution_number_of_demand_paths = demand.number_of_demand_paths
-        for path in demand.demand_path_list:
-            path.solution_path_signal_count = 1
-
-    return network
-
-
 def evolutionary_solve(network: Network) -> Network:
     config = get_config()
     seed(config.seed)
     population_size = config.population_size
     mutation_probability = config.mutation_probability
-    best_for_iterations = config.stop_arg
 
     # initialisation of population
     population = init_population(population_size, network)
-    # for idx, chromosome in enumerate(population):
-    #     print('Chromosome: ', idx)
-    #     chromosome.print()
 
     best_chromosome = None
     i = 0
+
+    if config.stop == 'mut':
+        mutation_counter = 0
+    if config.stop == 'time':
+        start = time.time()
     while True:
 
         print("OLD POPULATION:")
@@ -46,17 +34,12 @@ def evolutionary_solve(network: Network) -> Network:
 
         # pairs selection
         pairs = select_pairs(population)
-        # for idx, pair in enumerate(pairs):
-        #     print('Pair: ', idx)
-        #     pair[0].print()
-        #     pair[1].print()
-        # crossover inside pairs, new population consists of children from each pair in pairs
         new_population = make_crossover(pairs)
 
         # mutation in new population
         for chromosome in new_population:
-            chromosome.mutate(mutation_probability)
-            chromosome.update_fitness()
+            if chromosome.mutate(mutation_probability) and config.stop == 'mut':
+                mutation_counter += 1
 
         # set next population parents based on current population and their childes
         population = sorted(sorted(population)[0:2] + sorted(new_population + population)[0:population_size - 2])
@@ -66,19 +49,45 @@ def evolutionary_solve(network: Network) -> Network:
             n.print()
 
         # stopping criterium
-        if i > 0 and i % best_for_iterations == 0:
-            if best_chromosome.fitness == population[0].fitness:
-                print('BEST SOLUTION IN ITERATION: ', i)
-                best_chromosome.print()
-                break
+        if config.stop == 'best_iter':
+            if i > 0 and i % config.stop_arg == 0:
+                if best_chromosome.fitness == population[0].fitness:
+                    print_best_solution(best_chromosome, i, 'BEST ITERATION')
+                    break
 
-        if i % best_for_iterations == 0:
+            if i % config.stop_arg == 0:
+                best_chromosome = population[0]
+        elif config.stop == 'iter':
             best_chromosome = population[0]
+            if i == config.stop_arg:
+                print_best_solution(best_chromosome, i, 'NUMBER OF ITERATIONS')
+                break
+        elif config.stop == 'mut':
+            best_chromosome = population[0]
+            if mutation_counter >= config.stop_arg:
+                print_best_solution(best_chromosome, i, 'MINIMUM NUMBER OF MUTATIONS {}, PERFORMED {}'.format(
+                    config.stop_arg, mutation_counter))
+                break
+        elif config.stop == 'time':
+            best_chromosome = population[0]
+            end = time.time()
+            time_interval = end - start
+            if time_interval >= config.stop_arg:
+                print_best_solution(best_chromosome, i, 'MINIMUM ELAPSED TIME {} s, TAKES {} s'.format(
+                    config.stop_arg, time_interval))
+                break
         i += 1
+
     result_network = update_network_link_parameters(best_chromosome, network)
-    result_network.print()
+    for link in result_network.links_list:
+        link.print_result()
     return result_network
 
+
+def print_best_solution(chromosome, iter, stop):
+    print('STOPPING CRITERIUM ACHIEVED: ', stop)
+    print('BEST SOLUTION IN ITERATION: ', iter)
+    chromosome.print()
 
 def init_population(population_number: int, network: Network) -> list:
     chromosomes = []
@@ -146,11 +155,14 @@ class Chromosome(object):
             genes.append(Gene(demands_list[idx], paths_number))
         return genes
 
-    def mutate(self, mutation_probability):
+    def mutate(self, mutation_probability) -> bool:
+        mutation = False
         for gene in self.genes:
             if random() < mutation_probability:
+                mutation = True
                 gene.mutate()
                 self.update_fitness()
+        return mutation
 
     def update_fitness(self):
         self.fitness = self.calculate_fitness()
