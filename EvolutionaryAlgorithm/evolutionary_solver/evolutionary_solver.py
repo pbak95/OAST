@@ -221,7 +221,8 @@ class Gene(object):
         """
         self.paths = [0 for x in range(paths_number)]
         self.demand = demand
-        self.init_paths_values()
+        # self.init_paths_values()
+        self.init_paths_values_idx()
 
     def init_paths_values(self):
         for demand_path_id in range(0, self.demand.number_of_demand_paths):
@@ -234,6 +235,11 @@ class Gene(object):
                     self.paths[demand_path_id] = self.demand.demand_volume
             else:
                 self.paths[demand_path_id] = randint(0, self.demand.demand_volume - sum(self.paths[0:demand_path_id]))
+
+    def init_paths_values_idx(self):
+        for _ in range(0, self.demand.demand_volume):
+            rand_path_idx = randint(0, self.demand.number_of_demand_paths - 1)
+            self.paths[rand_path_idx] += 1
 
     def mutate(self):
         if self.demand.number_of_demand_paths == 2:
