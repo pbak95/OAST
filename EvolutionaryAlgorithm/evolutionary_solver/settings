@@ -1,5 +1,5 @@
-seed: 143
-population_size: 100
+seed: 113
+population_size: 50
 mutation_probability: 0.01
 # stop method with argument after method declaration, possible methods:
 #   - time(in seconds),

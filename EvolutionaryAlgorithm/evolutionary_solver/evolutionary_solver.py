@@ -33,7 +33,7 @@ def evolutionary_solve(network: Network) -> Network:
             o.print()
 
         # pairs selection
-        pairs = select_pairs(population)
+        pairs = select_pairs_rulette(population)
         new_population = make_crossover(pairs)
 
         # mutation in new population
@@ -97,7 +97,41 @@ def init_population(population_number: int, network: Network) -> list:
 
 
 def select_pairs(population: list) -> list:
-    return list(zip(population[::2], population[1::2]))
+    pairs = []
+
+    for _ in range(0, math.floor(len(population) / 2) - 1):
+        first_idx = randint(0, len(population) - 1)
+        first_parent = population.pop(first_idx)
+        second_idx = randint(0, len(population) - 1)
+        second_parent = population.pop(second_idx)
+        pairs.append((first_parent, second_parent))
+
+    return pairs
+    # return list(zip(population[::2], population[1::2]))
+
+def select_pairs_rulette(population: list) -> list:
+    pairs = []
+    scaled_fitnesses = []
+    sections = []
+    for chromosome in population:
+        scaled_fitnesses.append(max(math.floor(1000 / chromosome.fitness), 1))
+    # print('Scaled fitnesses: ', scaled_fitnesses)
+    for idx, scaled_fitness in enumerate(scaled_fitnesses):
+        sections.append(sum(scaled_fitnesses[0:idx]) + scaled_fitness)
+    # print('Sections: ', sections)
+    for _ in range(0, math.floor(len(population) / 2)):
+        first_parent_number = randint(0, sections[len(sections) - 1])
+        second_parent_number = randint(0, sections[len(sections) - 1])
+        first_parent = None
+        second_parent = None
+        for section in sections:
+            if first_parent_number <= section: first_parent = population[sections.index(section)]
+            if second_parent_number <= section: second_parent = population[sections.index(section)]
+            if first_parent is not None and second_parent is not None: break
+        pairs.append((first_parent, second_parent))
+    return pairs
+
+
 
 
 def make_crossover(pairs: list) -> list:
@@ -180,8 +214,9 @@ class Chromosome(object):
         for link in self.links_list:
             modules_number = ceil(link_load[link.link_id - 1] / link.single_module_capacity);
             if modules_number > link.maximum_number_of_modules:
-                fitness = math.inf
-                break
+                fitness += modules_number * link.module_cost \
+                           + (modules_number - link.maximum_number_of_modules) * link.module_cost * 7
+                # break
             else:
                 fitness += modules_number * link.module_cost
         return fitness
