@@ -30,7 +30,8 @@ def evolutionary_solve(network: Network) -> Network:
         print("OLD POPULATION:")
         for o in population:
             o.update_fitness()
-            o.print()
+        # print only first element
+        population[0].print()
 
         # pairs selection
         pairs = select_pairs_rulette(population)
@@ -44,9 +45,8 @@ def evolutionary_solve(network: Network) -> Network:
         # set next population parents based on current population and their childes
         population = sorted(sorted(new_population + population)[0:population_size])
 
-        print("NEW POPULATION:")
-        for n in population:
-            n.print()
+        # print("NEW POPULATION:")
+        # population[0].print()
 
         # stopping criterium
         if config.stop == 'best_iter':
@@ -172,13 +172,13 @@ class Chromosome(object):
         Represents full solution - load for all demands
         :param network:
         """
+        self.network = network
         self.number_of_links = network.number_of_links
         self.links_list = network.links_list
         self.number_of_demands = network.number_of_demands
         self.demands_list = network.demands_list
         self.genes = self.init_genes(self.demands_list, network.longest_demand_path)
         self.fitness = self.calculate_fitness()
-        self.network = network
 
     def __lt__(self, other):
         return self.fitness < other.fitness
@@ -212,16 +212,12 @@ class Chromosome(object):
         """
         fitness = 0
         link_load = self.calculate_link_load()
-        print(link_load)
+        # print(link_load)
         for link in self.links_list:
             modules_number = ceil(link_load[link.link_id - 1] / link.single_module_capacity);
             if modules_number > link.maximum_number_of_modules:
-                fitness += modules_number * link.module_cost \
-                           + (modules_number - link.maximum_number_of_modules) * link.module_cost * 7
-                # break
-            else:
-                fitness += modules_number * link.module_cost
-        print(fitness)
+                fitness += link_load[link.link_id - 1] - (link.maximum_number_of_modules * link.single_module_capacity)
+        # print(fitness)
         return fitness
 
     def calculate_link_load(self) -> list:
@@ -239,15 +235,15 @@ class Chromosome(object):
                 for linkInPath in self.demands_list[demand].demand_path_list[path].link_list:
                     load[linkInPath - 1] = load[linkInPath - 1] + flows_running_this_path
                     for real_link in self.links_list:
-                        if real_link.link_id == linkInPath - 1:
-                            real_link.number_of_signals
-                            real_link.number_of_signals = real_link.number_of_signals + 1
-                            real_link.number_of_fibers = real_link.number_of_fibers + flows_running_this_path
+                        if real_link.link_id == linkInPath:
+                            real_link.number_of_signals = real_link.number_of_signals + flows_running_this_path
+                            real_link.number_of_fibers = math.ceil(load[linkInPath - 1]/real_link.single_module_capacity)
         return load
 
     def print(self):
         # for gene in self.genes:
         #     gene.print()
+        self.network.update_link_capacity()
         self.print_link_load()
         print('Fitness: ', self.fitness)
         # self.update_fitness()
@@ -258,7 +254,7 @@ class Chromosome(object):
         load_list = self.calculate_link_load()
         result_string = ""
         for idx, load in enumerate(load_list):
-            result_string += str(load) + " -> " + str(self.network.links_list[idx].number_of_signals) + " | "
+            result_string += str(load) + ":" + str(self.network.links_list[idx].number_of_fibers) + " , "
         print('Link load: ', result_string)
         print('Correctness: ', self.network.is_valid())
 

@@ -23,7 +23,7 @@ def main():
     network = brute_solve(network_4)
     # network.print()
     # write_file('output/net4_brute_solution.txt', network)
-    # network = evolutionary_solve(network_4)
+    network = evolutionary_solve(network_4)
     write_file('output/net4_evolutionary_solution.txt', network)
 
 
