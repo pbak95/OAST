@@ -178,6 +178,7 @@ class Chromosome(object):
         self.demands_list = network.demands_list
         self.genes = self.init_genes(self.demands_list, network.longest_demand_path)
         self.fitness = self.calculate_fitness()
+        self.network = network
 
     def __lt__(self, other):
         return self.fitness < other.fitness
@@ -227,11 +228,19 @@ class Chromosome(object):
         :return: list of link load for each link where load index is equal (link_id - 1)
         """
         load = [0] * self.number_of_links
+        for real_link in self.links_list:
+            real_link.number_of_signals = 0
+            real_link.number_of_fibers = 0
         for demand in range(0, self.number_of_demands):
             for path in range(0, self.demands_list[demand].number_of_demand_paths):
                 flows_running_this_path = self.genes[demand].paths[path]
                 for linkInPath in self.demands_list[demand].demand_path_list[path].link_list:
                     load[linkInPath - 1] = load[linkInPath - 1] + flows_running_this_path
+                    for real_link in self.links_list:
+                        if real_link.link_id == linkInPath - 1:
+                            real_link.number_of_signals
+                            real_link.number_of_signals = real_link.number_of_signals + 1
+                            real_link.number_of_fibers = real_link.number_of_fibers + flows_running_this_path
         return load
 
     def print(self):
@@ -245,6 +254,7 @@ class Chromosome(object):
 
     def print_link_load(self):
         print('Link load: ', self.calculate_link_load())
+        print('Correctness: ', self.network.is_valid())
 
 
 class Gene(object):
