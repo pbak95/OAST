@@ -1,3 +1,4 @@
+import math
 # input data class
 class Network:
     def __init__(self, number_of_links: int, links_list: list, number_of_demands: int,
@@ -45,7 +46,7 @@ class Network:
                 for path in demand.demand_path_list:
                     if link.link_id in path.link_list and path.solution_path_signal_count != 0:
                         link.number_of_signals = link.number_of_signals + 1
-                        link.number_of_fibers = link.number_of_fibers + path.solution_path_signal_count
+                        link.number_of_fibers = math.ceil(link.number_of_signals/link.single_module_capacity)
 
     def is_valid(self) -> bool:
         for link in self.links_list:

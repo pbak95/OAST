@@ -212,6 +212,7 @@ class Chromosome(object):
         """
         fitness = 0
         link_load = self.calculate_link_load()
+        print(link_load)
         for link in self.links_list:
             modules_number = ceil(link_load[link.link_id - 1] / link.single_module_capacity);
             if modules_number > link.maximum_number_of_modules:
@@ -220,6 +221,7 @@ class Chromosome(object):
                 # break
             else:
                 fitness += modules_number * link.module_cost
+        print(fitness)
         return fitness
 
     def calculate_link_load(self) -> list:
@@ -253,7 +255,11 @@ class Chromosome(object):
         print('\n')
 
     def print_link_load(self):
-        print('Link load: ', self.calculate_link_load())
+        load_list = self.calculate_link_load()
+        result_string = ""
+        for idx, load in enumerate(load_list):
+            result_string += str(load) + " -> " + str(self.network.links_list[idx].number_of_signals) + " | "
+        print('Link load: ', result_string)
         print('Correctness: ', self.network.is_valid())
 
 
