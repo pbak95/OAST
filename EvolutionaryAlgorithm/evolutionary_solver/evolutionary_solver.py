@@ -30,10 +30,11 @@ def evolutionary_solve(network: Network) -> Network:
         print("OLD POPULATION:")
         for o in population:
             o.update_fitness()
-            o.print()
+        # print only first element
+        population[0].print()
 
         # pairs selection
-        pairs = select_pairs(population)
+        pairs = select_pairs_rulette(population)
         new_population = make_crossover(pairs)
 
         # mutation in new population
@@ -42,11 +43,10 @@ def evolutionary_solve(network: Network) -> Network:
                 mutation_counter += 1
 
         # set next population parents based on current population and their childes
-        population = sorted(sorted(population)[0:2] + sorted(new_population + population)[0:population_size - 2])
+        population = sorted(sorted(new_population + population)[0:population_size])
 
-        print("NEW POPULATION:")
-        for n in population:
-            n.print()
+        # print("NEW POPULATION:")
+        # population[0].print()
 
         # stopping criterium
         if config.stop == 'best_iter':
@@ -97,7 +97,41 @@ def init_population(population_number: int, network: Network) -> list:
 
 
 def select_pairs(population: list) -> list:
-    return list(zip(population[::2], population[1::2]))
+    pairs = []
+
+    for _ in range(0, math.floor(len(population) / 2) - 1):
+        first_idx = randint(0, len(population) - 1)
+        first_parent = population.pop(first_idx)
+        second_idx = randint(0, len(population) - 1)
+        second_parent = population.pop(second_idx)
+        pairs.append((first_parent, second_parent))
+
+    return pairs
+    # return list(zip(population[::2], population[1::2]))
+
+def select_pairs_rulette(population: list) -> list:
+    pairs = []
+    scaled_fitnesses = []
+    sections = []
+    for chromosome in population:
+        scaled_fitnesses.append(max(math.floor(1000 / chromosome.fitness), 1))
+    # print('Scaled fitnesses: ', scaled_fitnesses)
+    for idx, scaled_fitness in enumerate(scaled_fitnesses):
+        sections.append(sum(scaled_fitnesses[0:idx]) + scaled_fitness)
+    # print('Sections: ', sections)
+    for _ in range(0, math.floor(len(population) / 2)):
+        first_parent_number = randint(0, sections[len(sections) - 1])
+        second_parent_number = randint(0, sections[len(sections) - 1])
+        first_parent = None
+        second_parent = None
+        for section in sections:
+            if first_parent_number <= section: first_parent = population[sections.index(section)]
+            if second_parent_number <= section: second_parent = population[sections.index(section)]
+            if first_parent is not None and second_parent is not None: break
+        pairs.append((first_parent, second_parent))
+    return pairs
+
+
 
 
 def make_crossover(pairs: list) -> list:
@@ -138,6 +172,7 @@ class Chromosome(object):
         Represents full solution - load for all demands
         :param network:
         """
+        self.network = network
         self.number_of_links = network.number_of_links
         self.links_list = network.links_list
         self.number_of_demands = network.number_of_demands
@@ -177,13 +212,14 @@ class Chromosome(object):
         """
         fitness = 0
         link_load = self.calculate_link_load()
+        # print(link_load)
         for link in self.links_list:
             modules_number = ceil(link_load[link.link_id - 1] / link.single_module_capacity);
             if modules_number > link.maximum_number_of_modules:
-                fitness = math.inf
-                break
+                fitness += link_load[link.link_id - 1] + link_load[link.link_id - 1] - (link.maximum_number_of_modules * link.single_module_capacity)
             else:
-                fitness += modules_number * link.module_cost
+                fitness += link_load[link.link_id - 1]
+        # print(fitness)
         return fitness
 
     def calculate_link_load(self) -> list:
@@ -192,16 +228,24 @@ class Chromosome(object):
         :return: list of link load for each link where load index is equal (link_id - 1)
         """
         load = [0] * self.number_of_links
+        for real_link in self.links_list:
+            real_link.number_of_signals = 0
+            real_link.number_of_fibers = 0
         for demand in range(0, self.number_of_demands):
             for path in range(0, self.demands_list[demand].number_of_demand_paths):
                 flows_running_this_path = self.genes[demand].paths[path]
                 for linkInPath in self.demands_list[demand].demand_path_list[path].link_list:
                     load[linkInPath - 1] = load[linkInPath - 1] + flows_running_this_path
+                    for real_link in self.links_list:
+                        if real_link.link_id == linkInPath:
+                            real_link.number_of_signals = real_link.number_of_signals + flows_running_this_path
+                            real_link.number_of_fibers = math.ceil(load[linkInPath - 1]/real_link.single_module_capacity)
         return load
 
     def print(self):
         # for gene in self.genes:
         #     gene.print()
+        self.network.update_link_capacity()
         self.print_link_load()
         print('Fitness: ', self.fitness)
         # self.update_fitness()
@@ -209,7 +253,12 @@ class Chromosome(object):
         print('\n')
 
     def print_link_load(self):
-        print('Link load: ', self.calculate_link_load())
+        load_list = self.calculate_link_load()
+        result_string = ""
+        for idx, load in enumerate(load_list):
+            result_string += str(load) + ":" + str(self.network.links_list[idx].number_of_fibers) + " , "
+        print('Link load: ', result_string)
+        print('Correctness: ', self.network.is_valid())
 
 
 class Gene(object):
@@ -221,7 +270,8 @@ class Gene(object):
         """
         self.paths = [0 for x in range(paths_number)]
         self.demand = demand
-        self.init_paths_values()
+        # self.init_paths_values()
+        self.init_paths_values_idx()
 
     def init_paths_values(self):
         for demand_path_id in range(0, self.demand.number_of_demand_paths):
@@ -234,6 +284,11 @@ class Gene(object):
                     self.paths[demand_path_id] = self.demand.demand_volume
             else:
                 self.paths[demand_path_id] = randint(0, self.demand.demand_volume - sum(self.paths[0:demand_path_id]))
+
+    def init_paths_values_idx(self):
+        for _ in range(0, self.demand.demand_volume):
+            rand_path_idx = randint(0, self.demand.number_of_demand_paths - 1)
+            self.paths[rand_path_idx] += 1
 
     def mutate(self):
         if self.demand.number_of_demand_paths == 2:

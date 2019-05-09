@@ -1,6 +1,6 @@
 seed: 143
 population_size: 20
-mutation_probability: 0.01
+mutation_probability: 0.1
 # stop method with argument after method declaration, possible methods:
 #   - time(in seconds),
 #   - iter(number of iterations),
