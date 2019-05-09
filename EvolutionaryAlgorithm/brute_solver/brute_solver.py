@@ -19,10 +19,10 @@ def brute_solve(network: Network) -> Network:
     iteration.update_progress(0, 'infinity')
     # For every permutation calculate load on links and how many modules are needed to accommodate this load
     # Select best solution - can be multiple ones
-    # while iteration.next_iteration(str(best_solution.cost)):
-    iteration.next_iteration(str(best_solution.cost))
-    competing_solution = calculate_modules_cost(network, iteration.values)
-    best_solution = best_solution.compare(competing_solution)
+    while iteration.next_iteration(str(best_solution.cost)):
+    # iteration.next_iteration(str(best_solution.cost))
+        competing_solution = calculate_modules_cost(network, iteration.values)
+        best_solution = best_solution.compare(competing_solution)
 
     iteration.update_progress(1, str(best_solution.cost))
     end = time.time()

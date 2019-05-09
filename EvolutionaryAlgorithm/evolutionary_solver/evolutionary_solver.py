@@ -216,7 +216,9 @@ class Chromosome(object):
         for link in self.links_list:
             modules_number = ceil(link_load[link.link_id - 1] / link.single_module_capacity);
             if modules_number > link.maximum_number_of_modules:
-                fitness += link_load[link.link_id - 1] - (link.maximum_number_of_modules * link.single_module_capacity)
+                fitness += link_load[link.link_id - 1] + link_load[link.link_id - 1] - (link.maximum_number_of_modules * link.single_module_capacity)
+            else:
+                fitness += link_load[link.link_id - 1]
         # print(fitness)
         return fitness
 
