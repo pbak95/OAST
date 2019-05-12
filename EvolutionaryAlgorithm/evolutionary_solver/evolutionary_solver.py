@@ -20,14 +20,13 @@ def evolutionary_solve(network: Network) -> Network:
 
     best_chromosome = None
     i = 0
+    mutation_counter = 0
+    start = time.time()
+    total_time = None
 
-    if config.stop == 'mut':
-        mutation_counter = 0
-    if config.stop == 'time':
-        start = time.time()
     while True:
 
-        print("OLD POPULATION:")
+        print("GENERATION: ", i)
         for o in population:
             o.update_fitness()
         # print only first element
@@ -39,7 +38,7 @@ def evolutionary_solve(network: Network) -> Network:
 
         # mutation in new population
         for chromosome in new_population:
-            if chromosome.mutate(mutation_probability) and config.stop == 'mut':
+            if chromosome.mutate(mutation_probability):
                 mutation_counter += 1
 
         # set next population parents based on current population and their childes
@@ -51,8 +50,10 @@ def evolutionary_solve(network: Network) -> Network:
         # stopping criterium
         if config.stop == 'best_iter':
             if i > 0 and i % config.stop_arg == 0:
-                if best_chromosome.fitness == population[0].fitness:
-                    print_best_solution(best_chromosome, i, 'BEST ITERATION')
+                if best_chromosome.fitness == population[0].fitness and population[0].network.is_valid():
+                    end = time.time()
+                    total_time = end - start
+                    print_best_solution(best_chromosome, i, 'BEST ITERATION', mutation_counter, total_time)
                     break
 
             if i % config.stop_arg == 0:
@@ -60,21 +61,33 @@ def evolutionary_solve(network: Network) -> Network:
         elif config.stop == 'iter':
             best_chromosome = population[0]
             if i == config.stop_arg:
-                print_best_solution(best_chromosome, i, 'NUMBER OF ITERATIONS')
+                end = time.time()
+                total_time = end - start
+                print_best_solution(best_chromosome, i, 'NUMBER OF ITERATIONS', mutation_counter, total_time)
                 break
         elif config.stop == 'mut':
             best_chromosome = population[0]
             if mutation_counter >= config.stop_arg:
+                end = time.time()
+                total_time = end - start
                 print_best_solution(best_chromosome, i, 'MINIMUM NUMBER OF MUTATIONS {}, PERFORMED {}'.format(
-                    config.stop_arg, mutation_counter))
+                    config.stop_arg, mutation_counter), mutation_counter, total_time)
                 break
         elif config.stop == 'time':
             best_chromosome = population[0]
             end = time.time()
             time_interval = end - start
             if time_interval >= config.stop_arg:
+                total_time = time_interval
                 print_best_solution(best_chromosome, i, 'MINIMUM ELAPSED TIME {} s, TAKES {} s'.format(
-                    config.stop_arg, time_interval))
+                    config.stop_arg, time_interval), mutation_counter, total_time)
+                break
+        elif config.stop == 'valid':
+            best_chromosome = population[0]
+            if best_chromosome.network.is_valid():
+                end = time.time()
+                total_time = end - start
+                print_best_solution(best_chromosome, i, 'VALID RESULT', mutation_counter, total_time)
                 break
         i += 1
 
@@ -84,9 +97,11 @@ def evolutionary_solve(network: Network) -> Network:
     return result_network
 
 
-def print_best_solution(chromosome, iter, stop):
+def print_best_solution(chromosome, iter, stop, mutations_number, time):
     print('STOPPING CRITERIUM ACHIEVED: ', stop)
     print('BEST SOLUTION IN ITERATION: ', iter)
+    print('Mutations number: ', mutations_number)
+    print('Elapsed time: ', time)
     chromosome.print()
 
 def init_population(population_number: int, network: Network) -> list:
@@ -243,13 +258,11 @@ class Chromosome(object):
         return load
 
     def print(self):
-        # for gene in self.genes:
-        #     gene.print()
         self.network.update_link_capacity()
         self.print_link_load()
         print('Fitness: ', self.fitness)
-        # self.update_fitness()
-        # print('UPDATED Fitness: ', self.fitness)
+        # for gene in self.genes:
+        #     gene.print()
         print('\n')
 
     def print_link_load(self):
@@ -291,13 +304,20 @@ class Gene(object):
             self.paths[rand_path_idx] += 1
 
     def mutate(self):
-        if self.demand.number_of_demand_paths == 2:
-            self.paths[0], self.paths[1] = self.paths[1], self.paths[0]
-        elif self.demand.number_of_demand_paths > 2:
-            indexes = list(range(0, self.demand.number_of_demand_paths))
-            first_idx = indexes.pop(randint(0, self.demand.number_of_demand_paths - 1))
-            second_idx = indexes.pop(randint(0, len(indexes) - 1))
-            self.paths[first_idx], self.paths[second_idx] = self.paths[second_idx], self.paths[first_idx]
+        path_idx1 = 0
+        while True:
+            path_idx1 = randint(0, self.demand.number_of_demand_paths - 1)
+            if self.paths[path_idx1] != 0: break
+        path_idx2 = randint(0, self.demand.number_of_demand_paths - 1)
+        self.paths[path_idx1] -= 1
+        self.paths[path_idx2] += 1
+        # if self.demand.number_of_demand_paths == 2:
+        #     self.paths[0], self.paths[1] = self.paths[1], self.paths[0]
+        # elif self.demand.number_of_demand_paths > 2:
+        #     indexes = list(range(0, self.demand.number_of_demand_paths))
+        #     first_idx = indexes.pop(randint(0, self.demand.number_of_demand_paths - 1))
+        #     second_idx = indexes.pop(randint(0, len(indexes) - 1))
+        #     self.paths[first_idx], self.paths[second_idx] = self.paths[second_idx], self.paths[first_idx]
 
     def print(self):
         print(self.paths)

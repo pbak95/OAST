@@ -1,10 +1,11 @@
-seed: 143
-population_size: 20
+seed: 1231
+population_size: 50
 mutation_probability: 0.1
 # stop method with argument after method declaration, possible methods:
 #   - time(in seconds),
 #   - iter(number of iterations),
 #   - mut(minimum number of mutations),
 #   - best_iter(number of iterations without fitness improvement
-stop: best_iter 15
+#   - valid
+stop: valid 0
 
