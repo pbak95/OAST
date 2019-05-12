@@ -16,7 +16,7 @@ def main():
     """ Main program """
     print_usage()
 
-    network_4 = read_file('data/net12_1.txt')
+    network_4 = read_file('data/net12_2.txt')
     network_4.print()
 
     # Find solutions.
@@ -25,7 +25,7 @@ def main():
     # write_file('output/net4_brute_solution.txt', network)
 
     network = evolutionary_solve(network_4)
-    write_file('output/net1_1_evolutionary_solution.txt', network)
+    write_file('output/net12_2_best_select_solution_init_2.txt', network)
 
 
 if __name__ == "__main__":

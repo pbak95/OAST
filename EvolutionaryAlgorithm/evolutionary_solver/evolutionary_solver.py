@@ -33,7 +33,7 @@ def evolutionary_solve(network: Network) -> Network:
         population[0].print()
 
         # pairs selection
-        pairs = select_pairs_rulette(population)
+        pairs = select_pairs(population)
         new_population = make_crossover(pairs)
 
         # mutation in new population
@@ -114,39 +114,59 @@ def init_population(population_number: int, network: Network) -> list:
 def select_pairs(population: list) -> list:
     pairs = []
 
-    for _ in range(0, math.floor(len(population) / 2) - 1):
-        first_idx = randint(0, len(population) - 1)
-        first_parent = population.pop(first_idx)
-        second_idx = randint(0, len(population) - 1)
-        second_parent = population.pop(second_idx)
-        pairs.append((first_parent, second_parent))
-
-    return pairs
-    # return list(zip(population[::2], population[1::2]))
+    # for _ in range(0, math.floor(len(population) / 2) - 1):
+    #     first_idx = randint(0, len(population) - 1)
+    #     first_parent = population.pop(first_idx)
+    #     second_idx = randint(0, len(population) - 1)
+    #     second_parent = population.pop(second_idx)
+    #     pairs.append((first_parent, second_parent))
+    #
+    # return pairs
+    return list(zip(population[::2], population[1::2]))
 
 def select_pairs_rulette(population: list) -> list:
     pairs = []
     scaled_fitnesses = []
     sections = []
-    for chromosome in population:
-        scaled_fitnesses.append(max(math.floor(1000 / chromosome.fitness), 1))
-    # print('Scaled fitnesses: ', scaled_fitnesses)
-    for idx, scaled_fitness in enumerate(scaled_fitnesses):
-        sections.append(sum(scaled_fitnesses[0:idx]) + scaled_fitness)
-    # print('Sections: ', sections)
+    parts = []
+    worst_fitness = population[len(population) - 1].fitness
+    population_max_idx = len(population) - 1
+    for idx, chromosome in enumerate(population):
+        diff = max(worst_fitness - chromosome.fitness, 1)
+        scaled_fitnesses.append(diff)
+        if diff not in parts:
+            parts.append(diff)
+            sections.append((diff, idx))
+    parts_sum = sum(parts)
+    for idx, section in enumerate(sections):
+        sections[idx] = (section[0] / parts_sum, section[1])
+
+    for idx, section in enumerate(sections):
+        if idx > 0:
+            sections[idx] = (section[0] + sections[idx - 1][0], section[1])
+
     for _ in range(0, math.floor(len(population) / 2)):
-        first_parent_number = randint(0, sections[len(sections) - 1])
-        second_parent_number = randint(0, sections[len(sections) - 1])
+        first_parent_number = random()
+        second_parent_number = random()
         first_parent = None
         second_parent = None
-        for section in sections:
-            if first_parent_number <= section: first_parent = population[sections.index(section)]
-            if second_parent_number <= section: second_parent = population[sections.index(section)]
+        for idx, section in enumerate(sections):
+            if first_parent_number <= section[0] and first_parent is None:
+                first_parent = population[getIndex(idx, sections, section, population_max_idx)]
+            if second_parent_number <= section[0] and second_parent is None:
+                second_parent = population[getIndex(idx, sections, section, population_max_idx)]
             if first_parent is not None and second_parent is not None: break
         pairs.append((first_parent, second_parent))
     return pairs
 
 
+def getIndex(idx, sections, section, population_max_idx) -> int:
+    if idx == 0:
+        return randint(0, section[1])
+    elif idx == len(sections) - 1:
+        return randint(section[1], population_max_idx)
+    else:
+        return randint(section[1], sections[idx + 1][1] - 1)
 
 
 def make_crossover(pairs: list) -> list:
@@ -229,7 +249,7 @@ class Chromosome(object):
         link_load = self.calculate_link_load()
         # print(link_load)
         for link in self.links_list:
-            modules_number = ceil(link_load[link.link_id - 1] / link.single_module_capacity);
+            modules_number = ceil(link_load[link.link_id - 1] / link.single_module_capacity)
             if modules_number > link.maximum_number_of_modules:
                 fitness += link_load[link.link_id - 1] + link_load[link.link_id - 1] - (link.maximum_number_of_modules * link.single_module_capacity)
             else:
@@ -287,16 +307,19 @@ class Gene(object):
         self.init_paths_values_idx()
 
     def init_paths_values(self):
-        for demand_path_id in range(0, self.demand.number_of_demand_paths):
-            if demand_path_id == 0:
-                self.paths[demand_path_id] = randint(0, self.demand.demand_volume)
-            elif demand_path_id == self.demand.number_of_demand_paths - 1:
-                if self.demand.number_of_demand_paths > 1:
-                    self.paths[demand_path_id] = self.demand.demand_volume - sum(self.paths[0:demand_path_id])
+        if self.demand.number_of_demand_paths == 1:
+            self.paths[0] = self.demand.demand_volume
+        else:
+            for demand_path_id in range(0, self.demand.number_of_demand_paths):
+                if demand_path_id == 0:
+                    self.paths[demand_path_id] = randint(0, self.demand.demand_volume)
+                elif demand_path_id == self.demand.number_of_demand_paths - 1:
+                    if self.demand.number_of_demand_paths > 1:
+                        self.paths[demand_path_id] = self.demand.demand_volume - sum(self.paths[0:demand_path_id])
+                    else:
+                        self.paths[demand_path_id] = self.demand.demand_volume
                 else:
-                    self.paths[demand_path_id] = self.demand.demand_volume
-            else:
-                self.paths[demand_path_id] = randint(0, self.demand.demand_volume - sum(self.paths[0:demand_path_id]))
+                    self.paths[demand_path_id] = randint(0, self.demand.demand_volume - sum(self.paths[0:demand_path_id]))
 
     def init_paths_values_idx(self):
         for _ in range(0, self.demand.demand_volume):
@@ -306,18 +329,13 @@ class Gene(object):
     def mutate(self):
         path_idx1 = 0
         while True:
+            if sum(self.paths) == 0:
+                raise Exception('KUPA')
             path_idx1 = randint(0, self.demand.number_of_demand_paths - 1)
             if self.paths[path_idx1] != 0: break
         path_idx2 = randint(0, self.demand.number_of_demand_paths - 1)
         self.paths[path_idx1] -= 1
         self.paths[path_idx2] += 1
-        # if self.demand.number_of_demand_paths == 2:
-        #     self.paths[0], self.paths[1] = self.paths[1], self.paths[0]
-        # elif self.demand.number_of_demand_paths > 2:
-        #     indexes = list(range(0, self.demand.number_of_demand_paths))
-        #     first_idx = indexes.pop(randint(0, self.demand.number_of_demand_paths - 1))
-        #     second_idx = indexes.pop(randint(0, len(indexes) - 1))
-        #     self.paths[first_idx], self.paths[second_idx] = self.paths[second_idx], self.paths[first_idx]
 
     def print(self):
         print(self.paths)
