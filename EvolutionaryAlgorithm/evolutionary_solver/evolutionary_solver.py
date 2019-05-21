@@ -33,7 +33,7 @@ def evolutionary_solve(network: Network) -> Network:
         population[0].print()
 
         # pairs selection
-        pairs = select_pairs(population)
+        pairs = select_pairs_rulette(population)
         new_population = make_crossover(pairs)
 
         # mutation in new population
@@ -303,8 +303,8 @@ class Gene(object):
         """
         self.paths = [0 for x in range(paths_number)]
         self.demand = demand
-        # self.init_paths_values()
-        self.init_paths_values_idx()
+        self.init_paths_values()
+        # self.init_paths_values_idx()
 
     def init_paths_values(self):
         if self.demand.number_of_demand_paths == 1:
@@ -329,8 +329,6 @@ class Gene(object):
     def mutate(self):
         path_idx1 = 0
         while True:
-            if sum(self.paths) == 0:
-                raise Exception('KUPA')
             path_idx1 = randint(0, self.demand.number_of_demand_paths - 1)
             if self.paths[path_idx1] != 0: break
         path_idx2 = randint(0, self.demand.number_of_demand_paths - 1)
